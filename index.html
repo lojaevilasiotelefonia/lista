@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evilasio Telefonia - Gestão de Peças</title>
+    <title>Evilasio Telefonia- Gestão de Peças</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
         :root { --primary: #3498db; --success: #27ae60; --dark: #2c3e50; }
@@ -24,7 +25,10 @@
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
         .user-info { font-size: 0.9em; color: var(--dark); }
         .search-box { width: 100%; padding: 15px; font-size: 16px; border: 2px solid #eee; border-radius: 8px; margin-bottom: 15px; }
+        
+        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .btn-add { background: var(--success); color: white; padding: 10px 20px; }
+        .btn-import { background: #9b59b6; color: white; padding: 10px 20px; }
         
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--primary); color: white; padding: 12px; text-align: left; }
@@ -56,14 +60,16 @@
         <div class="header">
             <div>
                 <h2 style="margin:0">Evilasio Telefonia</h2>
-                <span class="user-info">Olá, <strong id="display-name">...</strong></span>
+                <span class="user-info">Olá, <strong id="display-name">Carregando...</strong></span>
             </div>
             <button onclick="logout()" style="background: #e74c3c; color: white; padding: 8px 15px;">Sair</button>
         </div>
 
-        <div style="display:flex; gap: 10px; margin-bottom: 20px;">
-            <input type="text" id="searchInput" class="search-box" placeholder="🔎 Buscar modelo..." onkeyup="filterTable()">
+        <div class="actions">
+            <input type="text" id="searchInput" class="search-box" style="flex:1" placeholder="🔎 Buscar modelo..." onkeyup="filterTable()">
             <button class="btn-add" onclick="toggleForm()">+ Peça</button>
+            <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Excel</button>
+            <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls, .csv" onchange="importExcel(event)">
         </div>
 
         <div id="add-form" class="hidden" style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
@@ -127,7 +133,6 @@
             if(!name) return alert("Por favor, digite seu nome!");
             auth.createUserWithEmailAndPassword(email, pass)
                 .then(userCred => {
-                    // Salva como AUTORIZADO: TRUE automaticamente
                     db.collection("usuarios").doc(userCred.user.uid).set({
                         nome: name,
                         email: email,
@@ -138,18 +143,20 @@
         }
     }
 
-    function logout() { auth.signOut(); }
+    function logout() { auth.signOut().then(() => location.reload()); }
 
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             
-            // Busca o nome do usuário no banco
             db.collection("usuarios").doc(user.uid).get().then(doc => {
-                if (doc.exists) {
-                    document.getElementById('display-name').innerText = doc.data().nome;
-                }
+                // CORREÇÃO DO NOME: Se não achar o nome, usa o email antes do @
+                const nomeUsuario = doc.exists ? doc.data().nome : user.email.split('@')[0];
+                document.getElementById('display-name').innerText = nomeUsuario;
+                loadData();
+            }).catch(() => {
+                document.getElementById('display-name').innerText = user.email.split('@')[0];
                 loadData();
             });
         } else {
@@ -175,6 +182,36 @@
                     </tr>`;
             });
         });
+    }
+
+    // FUNÇÃO PARA IMPORTAR EXCEL
+    function importExcel(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+            // Pula a primeira linha (cabeçalho) e processa o resto
+            let count = 0;
+            jsonData.slice(1).forEach(row => {
+                if (row[0] && row[1] && row[2]) {
+                    db.collection("pecas").add({
+                        data: String(row[0]), // Data
+                        modelo: String(row[1]).toUpperCase(), // Modelo
+                        custo: parseFloat(row[2]) // Custo
+                    });
+                    count++;
+                }
+            });
+            alert(count + " registros importados com sucesso!");
+            event.target.value = ''; // Limpa o campo de arquivo
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     function savePiece() {
