@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Norte Color - Gestão de Peças</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root { --primary: #3498db; --success: #27ae60; --dark: #2c3e50; --warning: #f39c12; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding-bottom: 60px; }
+        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* Telas de Autenticação */
+        #login-screen { position: fixed; inset: 0; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .login-box { background: white; padding: 30px; border-radius: 8px; width: 320px; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        
+        button { cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; font-weight: bold; }
+        .btn-main { background: var(--primary); color: white; width: 100%; padding: 12px; margin-top: 10px; }
+        .btn-secondary { background: transparent; color: var(--primary); width: 100%; padding: 8px; margin-top: 5px; text-decoration: underline; }
+        
+        /* Dashboard */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
+        .search-box { width: 100%; padding: 15px; font-size: 16px; border: 2px solid #eee; border-radius: 8px; margin-bottom: 15px; }
+        .btn-add { background: var(--success); color: white; padding: 10px 20px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--primary); color: white; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        
+        .waiting-msg { text-align: center; padding: 40px; }
+        .sugestao { background: #e8f4fd; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 4px solid var(--primary); }
+        .price { font-weight: bold; color: var(--success); }
+
+        footer { position: fixed; bottom: 0; width: 100%; background: var(--dark); color: white; text-align: center; padding: 10px 0; font-size: 0.8em; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h3 id="auth-title">Entrar no Sistema</h3>
+        <input type="email" id="email" placeholder="E-mail">
+        <input type="password" id="password" placeholder="Senha">
+        <button class="btn-main" id="btn-auth" onclick="handleAuth()">Entrar</button>
+        <button class="btn-secondary" id="btn-switch" onclick="toggleAuthMode()">Não tem conta? Registre-se</button>
+        <p id="login-error" style="color:red; font-size: 12px; margin-top:10px"></p>
+    </div>
+</div>
+
+<div id="app" class="hidden">
+    <div id="screen-waiting" class="container waiting-msg hidden">
+        <h2 style="color: var(--warning)">Acesso em Análise</h2>
+        <p>Seu cadastro foi recebido por nossa equipe.</p>
+        <p>Para liberar seu acesso, envie um e-mail para:<br>
+           <strong>nortecolor@gmail.com</strong></p>
+        <hr>
+        <button onclick="logout()" style="padding: 10px 20px;">Sair / Voltar</button>
+    </div>
+
+    <div id="screen-main" class="container hidden">
+        <div class="header">
+            <h2>Norte Color - Peças</h2>
+            <button onclick="logout()" style="background: #e74c3c; color: white; padding: 5px 10px;">Sair</button>
+        </div>
+
+        <div style="display:flex; gap: 10px; margin-bottom: 20px;">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔎 Buscar modelo..." onkeyup="filterTable()">
+            <button class="btn-add" onclick="toggleForm()">+ Peça</button>
+        </div>
+
+        <div id="add-form" class="hidden" style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+            <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 10px;">
+                <input type="date" id="new-data">
+                <input type="text" id="new-modelo" placeholder="Modelo">
+                <input type="number" id="new-custo" placeholder="Custo">
+                <button onclick="savePiece()" style="background: var(--success); color: white;">Salvar</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Modelo</th>
+                    <th>Custo</th>
+                    <th>Sugestão de Venda</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<footer>Desenvolvido por Fabio Oliveira 2026</footer>
+
+<script>
+    // CONFIGURAÇÃO DO SEU FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyB3pXWX8z0d2B4Ydaz8V4BfkUOwTTB3a6s",
+        authDomain: "consulta-pecas-88bef.firebaseapp.com",
+        projectId: "consulta-pecas-88bef",
+        storageBucket: "consulta-pecas-88bef.firebasestorage.app",
+        messagingSenderId: "947197799357",
+        appId: "1:947197799357:web:5276e85aea7ae93d5400d4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let isLoginMode = true;
+
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('auth-title').innerText = isLoginMode ? "Entrar no Sistema" : "Criar Nova Conta";
+        document.getElementById('btn-auth').innerText = isLoginMode ? "Entrar" : "Registrar Agora";
+        document.getElementById('btn-switch').innerText = isLoginMode ? "Não tem conta? Registre-se" : "Já tenho conta. Entrar";
+    }
+
+    function handleAuth() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        const errorDiv = document.getElementById('login-error');
+
+        if (isLoginMode) {
+            auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = "Erro: " + e.message);
+        } else {
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then(userCred => {
+                    // Ao registrar, cria o documento do usuário como bloqueado (autorizado: false)
+                    db.collection("usuarios").doc(userCred.user.uid).set({
+                        email: email,
+                        autorizado: false
+                    });
+                })
+                .catch(e => errorDiv.innerText = "Erro ao registrar: " + e.message);
+        }
+    }
+
+    function logout() { auth.signOut(); location.reload(); }
+
+    // MONITOR DE STATUS
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            
+            // Verifica no Firestore se este usuário tem autorização
+            db.collection("usuarios").doc(user.uid).onSnapshot(doc => {
+                if (doc.exists && doc.data().autorizado === true) {
+                    document.getElementById('screen-main').classList.remove('hidden');
+                    document.getElementById('screen-waiting').classList.add('hidden');
+                    loadData();
+                } else {
+                    document.getElementById('screen-main').classList.add('hidden');
+                    document.getElementById('screen-waiting').classList.remove('hidden');
+                }
+            });
+        } else {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+        }
+    });
+
+    function loadData() {
+        db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            snap.forEach(doc => {
+                const item = doc.data();
+                const sug1 = (item.custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+                const sug2 = (item.custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.data}</td>
+                        <td><strong>${item.modelo}</strong></td>
+                        <td>R$ ${parseFloat(item.custo).toFixed(2)}</td>
+                        <td><div class="sugestao">Sugestão: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div></td>
+                    </tr>`;
+            });
+        });
+    }
+
+    function savePiece() {
+        const data = document.getElementById('new-data').value;
+        const modelo = document.getElementById('new-modelo').value.toUpperCase();
+        const custo = parseFloat(document.getElementById('new-custo').value);
+        if(!data || !modelo || !custo) return alert("Preencha todos os campos!");
+        
+        db.collection("pecas").add({ data, modelo, custo }).then(() => {
+            toggleForm();
+            document.getElementById('new-modelo').value = '';
+            document.getElementById('new-custo').value = '';
+        });
+    }
+
+    function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
+
+    function filterTable() {
+        const val = document.getElementById('searchInput').value.toUpperCase();
+        const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        for (let r of rows) {
+            r.style.display = r.cells[1].innerText.toUpperCase().includes(val) ? "" : "none";
+        }
+    }
+</script>
+</body>
+</html>
