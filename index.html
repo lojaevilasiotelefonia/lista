@@ -9,11 +9,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     
     <style>
-        :root { --primary: #3498db; --success: #27ae60; --dark: #2c3e50; --warning: #f39c12; }
+        :root { --primary: #3498db; --success: #27ae60; --dark: #2c3e50; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding-bottom: 60px; }
         .container { max-width: 1000px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Telas de Autenticação */
         #login-screen { position: fixed; inset: 0; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .login-box { background: white; padding: 30px; border-radius: 8px; width: 320px; text-align: center; }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
@@ -22,8 +21,8 @@
         .btn-main { background: var(--primary); color: white; width: 100%; padding: 12px; margin-top: 10px; }
         .btn-secondary { background: transparent; color: var(--primary); width: 100%; padding: 8px; margin-top: 5px; text-decoration: underline; }
         
-        /* Dashboard */
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
+        .user-info { font-size: 0.9em; color: var(--dark); }
         .search-box { width: 100%; padding: 15px; font-size: 16px; border: 2px solid #eee; border-radius: 8px; margin-bottom: 15px; }
         .btn-add { background: var(--success); color: white; padding: 10px 20px; }
         
@@ -31,7 +30,6 @@
         th { background: var(--primary); color: white; padding: 12px; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
         
-        .waiting-msg { text-align: center; padding: 40px; }
         .sugestao { background: #e8f4fd; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 4px solid var(--primary); }
         .price { font-weight: bold; color: var(--success); }
 
@@ -44,6 +42,7 @@
 <div id="login-screen">
     <div class="login-box">
         <h3 id="auth-title">Entrar no Sistema</h3>
+        <input type="text" id="user-name" class="hidden" placeholder="Seu Nome Completo">
         <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Senha">
         <button class="btn-main" id="btn-auth" onclick="handleAuth()">Entrar</button>
@@ -53,19 +52,13 @@
 </div>
 
 <div id="app" class="hidden">
-    <div id="screen-waiting" class="container waiting-msg hidden">
-        <h2 style="color: var(--warning)">Acesso em Análise</h2>
-        <p>Seu cadastro foi recebido por nossa equipe.</p>
-        <p>Para liberar seu acesso, envie um e-mail para:<br>
-           <strong>nortecolor@gmail.com</strong></p>
-        <hr>
-        <button onclick="logout()" style="padding: 10px 20px;">Sair / Voltar</button>
-    </div>
-
-    <div id="screen-main" class="container hidden">
+    <div class="container">
         <div class="header">
-            <h2>Evilasio Telefonia - Peças</h2>
-            <button onclick="logout()" style="background: #e74c3c; color: white; padding: 5px 10px;">Sair</button>
+            <div>
+                <h2 style="margin:0">Evilasio Telefonia</h2>
+                <span class="user-info">Olá, <strong id="display-name">...</strong></span>
+            </div>
+            <button onclick="logout()" style="background: #e74c3c; color: white; padding: 8px 15px;">Sair</button>
         </div>
 
         <div style="display:flex; gap: 10px; margin-bottom: 20px;">
@@ -99,7 +92,6 @@
 <footer>Desenvolvido por Fabio Oliveira 2026</footer>
 
 <script>
-    // CONFIGURAÇÃO DO SEU FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyB3pXWX8z0d2B4Ydaz8V4BfkUOwTTB3a6s",
         authDomain: "consulta-pecas-88bef.firebaseapp.com",
@@ -118,48 +110,47 @@
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
         document.getElementById('auth-title').innerText = isLoginMode ? "Entrar no Sistema" : "Criar Nova Conta";
+        document.getElementById('user-name').classList.toggle('hidden', isLoginMode);
         document.getElementById('btn-auth').innerText = isLoginMode ? "Entrar" : "Registrar Agora";
-        document.getElementById('btn-switch').innerText = isLoginMode ? "Não tem conta? Registre-se" : "Já tenho conta. Entrar";
+        document.getElementById('btn-switch').innerText = isLoginMode ? "Voltar para Login" : "Não tem conta? Registre-se";
     }
 
     function handleAuth() {
+        const name = document.getElementById('user-name').value;
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
         const errorDiv = document.getElementById('login-error');
 
         if (isLoginMode) {
-            auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = "Erro: " + e.message);
+            auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = e.message);
         } else {
+            if(!name) return alert("Por favor, digite seu nome!");
             auth.createUserWithEmailAndPassword(email, pass)
                 .then(userCred => {
-                    // Ao registrar, cria o documento do usuário como bloqueado (autorizado: false)
+                    // Salva como AUTORIZADO: TRUE automaticamente
                     db.collection("usuarios").doc(userCred.user.uid).set({
+                        nome: name,
                         email: email,
-                        autorizado: false
+                        autorizado: true 
                     });
                 })
-                .catch(e => errorDiv.innerText = "Erro ao registrar: " + e.message);
+                .catch(e => errorDiv.innerText = e.message);
         }
     }
 
-    function logout() { auth.signOut(); location.reload(); }
+    function logout() { auth.signOut(); }
 
-    // MONITOR DE STATUS
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             
-            // Verifica no Firestore se este usuário tem autorização
-            db.collection("usuarios").doc(user.uid).onSnapshot(doc => {
-                if (doc.exists && doc.data().autorizado === true) {
-                    document.getElementById('screen-main').classList.remove('hidden');
-                    document.getElementById('screen-waiting').classList.add('hidden');
-                    loadData();
-                } else {
-                    document.getElementById('screen-main').classList.add('hidden');
-                    document.getElementById('screen-waiting').classList.remove('hidden');
+            // Busca o nome do usuário no banco
+            db.collection("usuarios").doc(user.uid).get().then(doc => {
+                if (doc.exists) {
+                    document.getElementById('display-name').innerText = doc.data().nome;
                 }
+                loadData();
             });
         } else {
             document.getElementById('login-screen').classList.remove('hidden');
@@ -180,7 +171,7 @@
                         <td>${item.data}</td>
                         <td><strong>${item.modelo}</strong></td>
                         <td>R$ ${parseFloat(item.custo).toFixed(2)}</td>
-                        <td><div class="sugestao">Sugestão: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div></td>
+                        <td><div class="sugestao">Venda: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div></td>
                     </tr>`;
             });
         });
@@ -190,7 +181,7 @@
         const data = document.getElementById('new-data').value;
         const modelo = document.getElementById('new-modelo').value.toUpperCase();
         const custo = parseFloat(document.getElementById('new-custo').value);
-        if(!data || !modelo || !custo) return alert("Preencha todos os campos!");
+        if(!data || !modelo || !custo) return alert("Preencha tudo!");
         
         db.collection("pecas").add({ data, modelo, custo }).then(() => {
             toggleForm();
