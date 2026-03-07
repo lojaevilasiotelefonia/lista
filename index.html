@@ -233,12 +233,12 @@
         if(!peca || !marca || !cliente) return alert("Por favor, preencha os campos obrigatórios (*)");
         if(!userPhone) return alert("Seu telefone não foi encontrado no cadastro!");
 
-        const mensagem = `Cotação de ${peca}, por favor: obrigatorio\n` +
-                         `Marca: ${marca} obrigatorio\n` +
-                         `Modelo: ${modelo} obrigatorio\n` +
+        const mensagem = `Cotação de ${peca}, por favor:\n` +
+                         `Marca: ${marca}\n` +
+                         `Modelo: ${modelo}\n` +
                          `REF: ${ref} opcional\n` +
                          `COR: ${cor} opcional\n` +
-                         `Cliente: ${cliente} obrigatorio\n\n` +
+                         `Cliente: ${cliente}\n\n` +
                          `*FAVOR COTAR SOMENTE SE TIVER EM ESTOQUE, NOVA E FUNCIONANDO, POR FAVOR*`;
 
         const foneLimpo = userPhone.replace(/\D/g, ''); 
