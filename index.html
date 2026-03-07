@@ -37,7 +37,6 @@
         .sugestao { background: #e8f4fd; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 4px solid var(--primary); margin-bottom: 5px; }
         .price { font-weight: bold; color: var(--success); }
         
-        /* Modal Styles */
         #cotacao-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; }
         .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; }
 
@@ -103,22 +102,16 @@
 <div id="cotacao-modal" class="hidden">
     <div class="modal-content">
         <h3 style="margin-top:0; color: var(--dark)">Nova Cotação</h3>
-        <label style="font-size: 12px;">Cotação de:*</label>
-        <input type="text" id="cot-peca" placeholder="Ex: Tela Frontal, Conector">
-        <label style="font-size: 12px;">Marca:*</label>
-        <input type="text" id="cot-marca" placeholder="Ex: Samsung, iPhone">
-        <label style="font-size: 12px;">Modelo:</label>
-        <input type="text" id="cot-modelo" readonly style="background: #f0f0f0;">
-        <label style="font-size: 12px;">REF (Opcional):</label>
-        <input type="text" id="cot-ref" placeholder="Referência">
-        <label style="font-size: 12px;">COR (Opcional):</label>
-        <input type="text" id="cot-cor" placeholder="Cor da peça">
-        <label style="font-size: 12px;">Cliente:*</label>
-        <input type="text" id="cot-cliente" placeholder="Nome do Cliente">
+        <input type="text" id="cot-peca" placeholder="Cotação de (Ex: Tela, Conector)*">
+        <input type="text" id="cot-marca" placeholder="Marca (Ex: Samsung)*">
+        <input type="text" id="cot-modelo" readonly style="background:#eee" placeholder="Modelo">
+        <input type="text" id="cot-ref" placeholder="REF (Opcional)">
+        <input type="text" id="cot-cor" placeholder="COR (Opcional)">
+        <input type="text" id="cot-cliente" placeholder="Nome do Cliente*">
         
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <button onclick="gerarMensagemZap()" style="background: var(--whatsapp); color: white; flex:2; padding:12px;">🚀 Enviar p/ WhatsApp Web</button>
-            <button onclick="fecharModal()" style="background: #eee; flex:1; padding:12px;">Fechar</button>
+            <button onclick="gerarMensagemFinal()" style="background: #25d366; color:white; flex:1; padding:12px;">Gerar WhatsApp</button>
+            <button onclick="fecharModal()" style="background: #ccc; flex:1; padding:12px;">Cancelar</button>
         </div>
     </div>
 </div>
@@ -140,7 +133,7 @@
     const db = firebase.firestore();
 
     let isLoginMode = true;
-    let userWhatsApp = "";
+    let userPhone = ""; 
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
@@ -161,7 +154,7 @@
         if (isLoginMode) {
             auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = e.message);
         } else {
-            if(!name || !phone) return alert("Por favor, preencha todos os campos!");
+            if(!name || !phone) return alert("Por favor, preencha nome e telefone!");
             auth.createUserWithEmailAndPassword(email, pass)
                 .then(userCred => {
                     db.collection("usuarios").doc(userCred.user.uid).set({
@@ -185,7 +178,7 @@
             db.collection("usuarios").doc(user.uid).get().then(doc => {
                 const userData = doc.data();
                 document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
-                userWhatsApp = doc.exists ? userData.telefone : "";
+                userPhone = doc.exists ? userData.telefone : ""; 
                 loadData();
             });
         } else {
@@ -210,8 +203,9 @@
                         <td>R$ ${parseFloat(item.custo).toFixed(2)}</td>
                         <td>
                             <div class="sugestao">Venda: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div>
-                            <button onclick="abrirModal('${item.modelo}')" style="background:var(--whatsapp); color:white; padding:5px 10px; border-radius:4px;">
-                                📱 Gerar Cotação
+                            <button onclick="abrirFormularioCotacao('${item.modelo}')" 
+                                    style="background:var(--whatsapp); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer">
+                                📝 Cotar Peça
                             </button>
                         </td>
                     </tr>`;
@@ -219,8 +213,7 @@
         });
     }
 
-    // LÓGICA DO MODAL DE COTAÇÃO
-    function abrirModal(modelo) {
+    function abrirFormularioCotacao(modelo) {
         document.getElementById('cot-modelo').value = modelo;
         document.getElementById('cotacao-modal').classList.remove('hidden');
     }
@@ -229,33 +222,32 @@
         document.getElementById('cotacao-modal').classList.add('hidden');
     }
 
-    function gerarMensagemZap() {
+    function gerarMensagemFinal() {
         const peca = document.getElementById('cot-peca').value;
         const marca = document.getElementById('cot-marca').value;
         const modelo = document.getElementById('cot-modelo').value;
-        const ref = document.getElementById('cot-ref').value || "Não informado";
-        const cor = document.getElementById('cot-cor').value || "Não informado";
+        const ref = document.getElementById('cot-ref').value || "Não informada";
+        const cor = document.getElementById('cot-cor').value || "Não informada";
         const cliente = document.getElementById('cot-cliente').value;
 
-        if(!peca || !marca || !cliente) return alert("Preencha os campos obrigatórios!");
-        if(!userWhatsApp) return alert("Seu número de WhatsApp não foi encontrado no cadastro!");
+        if(!peca || !marca || !cliente) return alert("Por favor, preencha os campos obrigatórios (*)");
+        if(!userPhone) return alert("Seu telefone não foi encontrado no cadastro!");
 
-        const mensagem = `Cotação de ${peca}, por favor:\n` +
-                         `Marca: ${marca}\n` +
-                         `Modelo: ${modelo}\n` +
-                         `REF: ${ref}\n` +
-                         `COR: ${cor}\n` +
-                         `Cliente: ${cliente}\n\n` +
+        const mensagem = `Cotação de ${peca}, por favor: obrigatorio\n` +
+                         `Marca: ${marca} obrigatorio\n` +
+                         `Modelo: ${modelo} obrigatorio\n` +
+                         `REF: ${ref} opcional\n` +
+                         `COR: ${cor} opcional\n` +
+                         `Cliente: ${cliente} obrigatorio\n\n` +
                          `*FAVOR COTAR SOMENTE SE TIVER EM ESTOQUE, NOVA E FUNCIONANDO, POR FAVOR*`;
 
-        const foneLimpo = userWhatsApp.replace(/\D/g, '');
+        const foneLimpo = userPhone.replace(/\D/g, ''); 
         const url = `https://web.whatsapp.com/send?phone=${foneLimpo}&text=${encodeURIComponent(mensagem)}`;
         
         window.open(url, '_blank');
         fecharModal();
     }
 
-    // FUNÇÕES DE GESTÃO DE PEÇAS
     function importExcel(event) {
         const file = event.target.files[0];
         if (!file) return;
