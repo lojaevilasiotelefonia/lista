@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evilasio Telefonia- Gestão de Peças</title>
+    <title>Evilasio Telefonia - Gestão de Peças</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        :root { --primary: #3498db; --success: #27ae60; --dark: #2c3e50; }
+        :root { --primary: #3498db; --success: #27ae60; --dark: #2c3e50; --whatsapp: #25d366; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding-bottom: 60px; }
         .container { max-width: 1000px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
         #login-screen { position: fixed; inset: 0; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .login-box { background: white; padding: 30px; border-radius: 8px; width: 320px; text-align: center; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
         
         button { cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; font-weight: bold; }
         .btn-main { background: var(--primary); color: white; width: 100%; padding: 12px; margin-top: 10px; }
@@ -34,8 +34,12 @@
         th { background: var(--primary); color: white; padding: 12px; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
         
-        .sugestao { background: #e8f4fd; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 4px solid var(--primary); }
+        .sugestao { background: #e8f4fd; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 4px solid var(--primary); margin-bottom: 5px; }
         .price { font-weight: bold; color: var(--success); }
+        
+        /* Modal Styles */
+        #cotacao-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; }
 
         footer { position: fixed; bottom: 0; width: 100%; background: var(--dark); color: white; text-align: center; padding: 10px 0; font-size: 0.8em; }
         .hidden { display: none !important; }
@@ -46,7 +50,8 @@
 <div id="login-screen">
     <div class="login-box">
         <h3 id="auth-title">Entrar no Sistema</h3>
-        <input type="text" id="user-name" class="hidden" placeholder="Seu Nome Completo">
+        <input type="text" id="user-name" class="hidden" placeholder="Nome Completo">
+        <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp (Ex: 5527999998888)">
         <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Senha">
         <button class="btn-main" id="btn-auth" onclick="handleAuth()">Entrar</button>
@@ -87,11 +92,34 @@
                     <th>Data</th>
                     <th>Modelo</th>
                     <th>Custo</th>
-                    <th>Sugestão de Venda</th>
+                    <th>Sugestão e Cotação</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
+    </div>
+</div>
+
+<div id="cotacao-modal" class="hidden">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color: var(--dark)">Nova Cotação</h3>
+        <label style="font-size: 12px;">Cotação de:*</label>
+        <input type="text" id="cot-peca" placeholder="Ex: Tela Frontal, Conector">
+        <label style="font-size: 12px;">Marca:*</label>
+        <input type="text" id="cot-marca" placeholder="Ex: Samsung, iPhone">
+        <label style="font-size: 12px;">Modelo:</label>
+        <input type="text" id="cot-modelo" readonly style="background: #f0f0f0;">
+        <label style="font-size: 12px;">REF (Opcional):</label>
+        <input type="text" id="cot-ref" placeholder="Referência">
+        <label style="font-size: 12px;">COR (Opcional):</label>
+        <input type="text" id="cot-cor" placeholder="Cor da peça">
+        <label style="font-size: 12px;">Cliente:*</label>
+        <input type="text" id="cot-cliente" placeholder="Nome do Cliente">
+        
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button onclick="gerarMensagemZap()" style="background: var(--whatsapp); color: white; flex:2; padding:12px;">🚀 Enviar p/ WhatsApp Web</button>
+            <button onclick="fecharModal()" style="background: #eee; flex:1; padding:12px;">Fechar</button>
+        </div>
     </div>
 </div>
 
@@ -112,17 +140,20 @@
     const db = firebase.firestore();
 
     let isLoginMode = true;
+    let userWhatsApp = "";
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
         document.getElementById('auth-title').innerText = isLoginMode ? "Entrar no Sistema" : "Criar Nova Conta";
         document.getElementById('user-name').classList.toggle('hidden', isLoginMode);
+        document.getElementById('user-phone').classList.toggle('hidden', isLoginMode);
         document.getElementById('btn-auth').innerText = isLoginMode ? "Entrar" : "Registrar Agora";
-        document.getElementById('btn-switch').innerText = isLoginMode ? "Voltar para Login" : "Não tem conta? Registre-se";
+        document.getElementById('btn-switch').innerText = isLoginMode ? "Não tem conta? Registre-se" : "Voltar para Login";
     }
 
     function handleAuth() {
         const name = document.getElementById('user-name').value;
+        const phone = document.getElementById('user-phone').value;
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
         const errorDiv = document.getElementById('login-error');
@@ -130,11 +161,12 @@
         if (isLoginMode) {
             auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = e.message);
         } else {
-            if(!name) return alert("Por favor, digite seu nome!");
+            if(!name || !phone) return alert("Por favor, preencha todos os campos!");
             auth.createUserWithEmailAndPassword(email, pass)
                 .then(userCred => {
                     db.collection("usuarios").doc(userCred.user.uid).set({
                         nome: name,
+                        telefone: phone,
                         email: email,
                         autorizado: true 
                     });
@@ -151,12 +183,9 @@
             document.getElementById('app').classList.remove('hidden');
             
             db.collection("usuarios").doc(user.uid).get().then(doc => {
-                // CORREÇÃO DO NOME: Se não achar o nome, usa o email antes do @
-                const nomeUsuario = doc.exists ? doc.data().nome : user.email.split('@')[0];
-                document.getElementById('display-name').innerText = nomeUsuario;
-                loadData();
-            }).catch(() => {
-                document.getElementById('display-name').innerText = user.email.split('@')[0];
+                const userData = doc.data();
+                document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
+                userWhatsApp = doc.exists ? userData.telefone : "";
                 loadData();
             });
         } else {
@@ -173,43 +202,82 @@
                 const item = doc.data();
                 const sug1 = (item.custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
                 const sug2 = (item.custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+                
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.data}</td>
                         <td><strong>${item.modelo}</strong></td>
                         <td>R$ ${parseFloat(item.custo).toFixed(2)}</td>
-                        <td><div class="sugestao">Venda: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div></td>
+                        <td>
+                            <div class="sugestao">Venda: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div>
+                            <button onclick="abrirModal('${item.modelo}')" style="background:var(--whatsapp); color:white; padding:5px 10px; border-radius:4px;">
+                                📱 Gerar Cotação
+                            </button>
+                        </td>
                     </tr>`;
             });
         });
     }
 
-    // FUNÇÃO PARA IMPORTAR EXCEL
+    // LÓGICA DO MODAL DE COTAÇÃO
+    function abrirModal(modelo) {
+        document.getElementById('cot-modelo').value = modelo;
+        document.getElementById('cotacao-modal').classList.remove('hidden');
+    }
+
+    function fecharModal() {
+        document.getElementById('cotacao-modal').classList.add('hidden');
+    }
+
+    function gerarMensagemZap() {
+        const peca = document.getElementById('cot-peca').value;
+        const marca = document.getElementById('cot-marca').value;
+        const modelo = document.getElementById('cot-modelo').value;
+        const ref = document.getElementById('cot-ref').value || "Não informado";
+        const cor = document.getElementById('cot-cor').value || "Não informado";
+        const cliente = document.getElementById('cot-cliente').value;
+
+        if(!peca || !marca || !cliente) return alert("Preencha os campos obrigatórios!");
+        if(!userWhatsApp) return alert("Seu número de WhatsApp não foi encontrado no cadastro!");
+
+        const mensagem = `Cotação de ${peca}, por favor:\n` +
+                         `Marca: ${marca}\n` +
+                         `Modelo: ${modelo}\n` +
+                         `REF: ${ref}\n` +
+                         `COR: ${cor}\n` +
+                         `Cliente: ${cliente}\n\n` +
+                         `*FAVOR COTAR SOMENTE SE TIVER EM ESTOQUE, NOVA E FUNCIONANDO, POR FAVOR*`;
+
+        const foneLimpo = userWhatsApp.replace(/\D/g, '');
+        const url = `https://web.whatsapp.com/send?phone=${foneLimpo}&text=${encodeURIComponent(mensagem)}`;
+        
+        window.open(url, '_blank');
+        fecharModal();
+    }
+
+    // FUNÇÕES DE GESTÃO DE PEÇAS
     function importExcel(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (e) => {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-            // Pula a primeira linha (cabeçalho) e processa o resto
             let count = 0;
             jsonData.slice(1).forEach(row => {
                 if (row[0] && row[1] && row[2]) {
                     db.collection("pecas").add({
-                        data: String(row[0]), // Data
-                        modelo: String(row[1]).toUpperCase(), // Modelo
-                        custo: parseFloat(row[2]) // Custo
+                        data: String(row[0]),
+                        modelo: String(row[1]).toUpperCase(),
+                        custo: parseFloat(row[2])
                     });
                     count++;
                 }
             });
-            alert(count + " registros importados com sucesso!");
-            event.target.value = ''; // Limpa o campo de arquivo
+            alert(count + " registros importados!");
+            event.target.value = '';
         };
         reader.readAsArrayBuffer(file);
     }
@@ -219,7 +287,6 @@
         const modelo = document.getElementById('new-modelo').value.toUpperCase();
         const custo = parseFloat(document.getElementById('new-custo').value);
         if(!data || !modelo || !custo) return alert("Preencha tudo!");
-        
         db.collection("pecas").add({ data, modelo, custo }).then(() => {
             toggleForm();
             document.getElementById('new-modelo').value = '';
