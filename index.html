@@ -188,7 +188,7 @@
 <footer>&copy; 2026 Evilasio Telefonia | Desenvolvido por Fabio Oliveira</footer>
 
 <script>
-    const firebaseConfig = {
+   const firebaseConfig = {
         apiKey: "AIzaSyB3pXWX8z0d2B4Ydaz8V4BfkUOwTTB3a6s",
         authDomain: "consulta-pecas-88bef.firebaseapp.com",
         projectId: "consulta-pecas-88bef",
@@ -232,7 +232,7 @@
                         nome: name,
                         telefone: phone,
                         email: email,
-                        autorizado: false // Inicialmente falso por segurança
+                        autorizado: (email === ADM_EMAIL) // ADM já nasce autorizado
                     });
                 })
                 .catch(e => errorDiv.innerText = e.message);
@@ -241,24 +241,44 @@
 
     function logout() { auth.signOut().then(() => location.reload()); }
 
+    // MONITOR DE LOGIN CORRIGIDO
     auth.onAuthStateChanged(user => {
+        const appDiv = document.getElementById('app');
+        const loginDiv = document.getElementById('login-screen');
+        const display = document.getElementById('display-name');
+
         if (user) {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
+            loginDiv.classList.add('hidden');
+            appDiv.classList.remove('hidden');
             
+            // 1. Mostrar botão de Admin se for você
             if(user.email === ADM_EMAIL) {
                 document.getElementById('btn-limpar-tudo').classList.remove('hidden');
             }
 
+            // 2. Carregar dados do perfil (Sem travar o app)
             db.collection("usuarios").doc(user.uid).get().then(doc => {
-                const userData = doc.data();
-                document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
-                userPhone = doc.exists ? userData.telefone : ""; 
-                loadData(userData?.autorizado);
+                let isEditor = false;
+                if (doc.exists) {
+                    const data = doc.data();
+                    display.innerText = data.nome;
+                    userPhone = data.telefone;
+                    isEditor = data.autorizado;
+                } else {
+                    display.innerText = user.email.split('@')[0];
+                    if(user.email === ADM_EMAIL) isEditor = true;
+                }
+                // 3. Carregar as peças passando a permissão encontrada
+                loadData(isEditor);
+            }).catch(err => {
+                console.log("Erro ao ler perfil, carregando básico...", err);
+                display.innerText = user.email;
+                loadData(user.email === ADM_EMAIL);
             });
+
         } else {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('app').classList.add('hidden');
+            loginDiv.classList.remove('hidden');
+            appDiv.classList.add('hidden');
         }
     });
 
@@ -266,6 +286,12 @@
         db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
+            
+            if (snap.empty) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px">Nenhum dado encontrado.</td></tr>';
+                return;
+            }
+
             snap.forEach(doc => {
                 const item = doc.data();
                 const id = doc.id;
@@ -273,8 +299,9 @@
                 const sug1 = (custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
                 const sug2 = (custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
                 
+                // Regra: Pode excluir se for o e-mail ADM OU se tiver campo 'autorizado: true' no Firestore
                 const podeExcluir = (isAutorizado || auth.currentUser.email === ADM_EMAIL);
-                const btnExcluir = podeExcluir ? `<button onclick="excluirPeca('${id}')" class="btn-delete-row">Excluir 🗑️</button>` : '';
+                const btnExcluir = podeExcluir ? `<br><button onclick="excluirPeca('${id}')" class="btn-delete-row">Excluir 🗑️</button>` : '';
 
                 tbody.innerHTML += `
                     <tr>
@@ -285,18 +312,55 @@
                         </td>
                         <td class="price">${custo.toLocaleString('pt-br', {style:'currency', currency:'BRL'})}</td>
                         <td>
-                            <div class="sugestao">Venda sugerida: <br><strong>${sug1}</strong> a <strong>${sug2}</strong></div>
+                            <div class="sugestao">Venda: <strong>${sug1}</strong> a <strong>${sug2}</strong></div>
                             <button onclick="abrirFormularioCotacao('${item.modelo}')" 
                                     style="background:var(--whatsapp); color:white; padding:6px 12px; font-size:12px">
-                                💬 Gerar Cotação
+                                💬 Cotação
                             </button>
                         </td>
                     </tr>`;
             });
+        }, error => {
+            alert("Erro de acesso ao banco. Verifique as 'Rules' no console do Firebase.");
         });
     }
 
-    // --- FUNÇÕES DE IMPORTAÇÃO E DATA ---
+    async function limparBancoDados() {
+        if (auth.currentUser.email !== ADM_EMAIL) {
+            alert("SOMENTE ADMINISTRADOR FABIO OLIVEIRA PODE ALTERAR BANCO DE DADOS");
+            return;
+        }
+        if (confirm("🚨 APAGAR TUDO? Esta ação não pode ser desfeita!")) {
+            const snap = await db.collection("pecas").get();
+            const batch = db.batch();
+            snap.docs.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+            alert("Banco limpo!");
+        }
+    }
+
+    function excluirPeca(id) {
+        if (confirm("Deseja excluir esta peça?")) {
+            db.collection("pecas").doc(id).delete().catch(e => {
+                alert("Erro: Somente usuários autorizados podem excluir.");
+            });
+        }
+    }
+
+    function savePiece() {
+        const dataInput = document.getElementById('new-data').value;
+        const modelo = document.getElementById('new-modelo').value.toUpperCase();
+        const custo = parseFloat(document.getElementById('new-custo').value);
+        if(!dataInput || !modelo || isNaN(custo)) return alert("Preencha todos os campos!");
+        
+        const dataBR = dataInput.split('-').reverse().join('/');
+        db.collection("pecas").add({ data: dataBR, modelo, custo }).then(() => {
+            toggleForm();
+            document.getElementById('new-modelo').value = '';
+            document.getElementById('new-custo').value = '';
+        });
+    }
+
     function converterDataExcel(valor) {
         if (typeof valor === "number") {
             const dataJS = new Date(Math.round((valor - 25569) * 86400 * 1000));
@@ -314,7 +378,6 @@
             const workbook = XLSX.read(data, { type: 'array' });
             const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
             let count = 0;
-            
             jsonData.slice(1).forEach(row => {
                 if (row[0] && row[1]) {
                     db.collection("pecas").add({
@@ -325,46 +388,11 @@
                     count++;
                 }
             });
-            alert(count + " Peças importadas com sucesso!");
+            alert(count + " Itens importados!");
         };
         reader.readAsArrayBuffer(file);
     }
 
-    // --- AÇÕES DO BANCO ---
-    async function limparBancoDados() {
-        if (auth.currentUser.email !== ADM_EMAIL) return alert("Apenas Fábio Oliveira pode resetar o banco.");
-        if (confirm("🚨 ATENÇÃO: Deseja APAGAR TUDO permanentemente?")) {
-            const snap = await db.collection("pecas").get();
-            const batch = db.batch();
-            snap.docs.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-            alert("Banco de dados reiniciado!");
-        }
-    }
-
-    function excluirPeca(id) {
-        if (confirm("Excluir esta peça?")) {
-            db.collection("pecas").doc(id).delete().catch(() => alert("Erro ao excluir. Verifique permissões."));
-        }
-    }
-
-    function savePiece() {
-        const data = document.getElementById('new-data').value;
-        const modelo = document.getElementById('new-modelo').value.toUpperCase();
-        const custo = parseFloat(document.getElementById('new-custo').value);
-        if(!data || !modelo || isNaN(custo)) return alert("Preencha todos os campos corretamente.");
-        
-        // Formatar data de YYYY-MM-DD para DD/MM/YYYY
-        const dataFormatada = data.split('-').reverse().join('/');
-
-        db.collection("pecas").add({ data: dataFormatada, modelo, custo }).then(() => {
-            toggleForm();
-            document.getElementById('new-modelo').value = '';
-            document.getElementById('new-custo').value = '';
-        });
-    }
-
-    // --- AUXILIARES UI ---
     function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
     
     function filterTable() {
@@ -383,17 +411,11 @@
     function fecharModal() { document.getElementById('cotacao-modal').classList.add('hidden'); }
 
     function gerarMensagemFinal() {
-        const fields = ['cot-peca', 'cot-marca', 'cot-cliente'];
-        for(let f of fields) if(!document.getElementById(f).value) return alert("Preencha os campos com asterisco (*)");
+        const peca = document.getElementById('cot-peca').value;
+        const cliente = document.getElementById('cot-cliente').value;
+        if(!peca || !cliente) return alert("Preencha os campos obrigatórios!");
 
-        const msg = `Cotação de ${document.getElementById('cot-peca').value}\n` +
-                    `Marca: ${document.getElementById('cot-marca').value}\n` +
-                    `Modelo: ${document.getElementById('cot-modelo').value}\n` +
-                    `REF: ${document.getElementById('cot-ref').value || '-'}\n` +
-                    `COR: ${document.getElementById('cot-cor').value || '-'}\n` +
-                    `Cliente: ${document.getElementById('cot-cliente').value}\n\n` +
-                    `*FAVOR COTAR SOMENTE SE TIVER EM ESTOQUE, NOVA E FUNCIONANDO.*`;
-
+        const msg = `Cotação de ${peca}\nModelo: ${document.getElementById('cot-modelo').value}\nCliente: ${cliente}\n\n*Favor cotar somente se tiver em estoque.*`;
         const url = `https://web.whatsapp.com/send?phone=${userPhone.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');
         fecharModal();
