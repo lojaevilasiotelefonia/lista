@@ -247,32 +247,47 @@
         window.open(url, '_blank');
         fecharModal();
     }
-
-    function importExcel(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-            let count = 0;
-            jsonData.slice(1).forEach(row => {
-                if (row[0] && row[1] && row[2]) {
-                    db.collection("pecas").add({
-                        data: String(row[0]),
-                        modelo: String(row[1]).toUpperCase(),
-                        custo: parseFloat(row[2])
-                    });
-                    count++;
-                }
-            });
-            alert(count + " registros importados!");
-            event.target.value = '';
-        };
-        reader.readAsArrayBuffer(file);
+function converterDataExcel(valor) {
+    // Verifica se o valor é um número (como 44595 do Excel)
+    if (typeof valor === "number" || (!isNaN(valor) && !String(valor).includes('/'))) {
+        // A fórmula matemática para transformar os dias do Excel em Data do JavaScript (usando UTC para evitar fuso horário)
+        const dataJS = new Date(Math.round((Number(valor) - 25569) * 86400 * 1000));
+        const dia = String(dataJS.getUTCDate()).padStart(2, '0');
+        const mes = String(dataJS.getUTCMonth() + 1).padStart(2, '0');
+        const ano = dataJS.getUTCFullYear();
+        return `${dia}/${mes}/${ano}`; // Retorna prontinho: DD/MM/AAAA
     }
+    
+    // Se por acaso já for uma data em texto (ex: "30/01/2026"), apenas retorna ela mesma
+    return String(valor);
+}
+    function importExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        let count = 0;
+        
+        jsonData.slice(1).forEach(row => {
+            if (row[0] && row[1] && row[2]) {
+                db.collection("pecas").add({
+                    data: converterDataExcel(row[0]), // <--- A MUDANÇA ESTÁ AQUI
+                    modelo: String(row[1]).toUpperCase(),
+                    custo: parseFloat(row[2])
+                });
+                count++;
+            }
+        });
+        
+        alert(count + " registros importados!");
+        event.target.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+}
 
     function savePiece() {
         const data = document.getElementById('new-data').value;
