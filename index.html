@@ -3,60 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evilasio Telefonia - Gestão de Peças</title>
+    <title>Evilasio Telefonia - Gestão Profissional</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        :root { --primary: #3498db; --success: #27ae60; --dark: #2c3e50; --whatsapp: #25d366; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding-bottom: 60px; }
-        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        #login-screen { position: fixed; inset: 0; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-box { background: white; padding: 30px; border-radius: 8px; width: 320px; text-align: center; }
-        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        
-        button { cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; font-weight: bold; }
-        .btn-main { background: var(--primary); color: white; width: 100%; padding: 12px; margin-top: 10px; }
-        .btn-secondary { background: transparent; color: var(--primary); width: 100%; padding: 8px; margin-top: 5px; text-decoration: underline; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
-        .user-info { font-size: 0.9em; color: var(--dark); }
-        .search-box { width: 100%; padding: 15px; font-size: 16px; border: 2px solid #eee; border-radius: 8px; margin-bottom: 15px; }
-        
-        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .btn-add { background: var(--success); color: white; padding: 10px 20px; }
-        .btn-import { background: #9b59b6; color: white; padding: 10px 20px; }
-        <button id="btn-limpar-tudo" class="hidden" onclick="limparBancoDados()" style="background: #000; color: white; padding: 10px 20px;">🔥 Limpar Banco</button>
-        
-        table { width: 100%; border-collapse: collapse; }
-        th { background: var(--primary); color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        
-        .sugestao { background: #e8f4fd; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 4px solid var(--primary); margin-bottom: 5px; }
-        .price { font-weight: bold; color: var(--success); }
-        
-        #cotacao-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; }
+        :root { 
+            --primary: #1e3a8a; 
+            --accent: #3b82f6;
+            --success: #10b981; 
+            --danger: #ef4444;
+            --dark: #0f172a; 
+            --light: #f8fafc;
+            --whatsapp: #22c55e;
+        }
 
-        footer { position: fixed; bottom: 0; width: 100%; background: var(--dark); color: white; text-align: center; padding: 10px 0; font-size: 0.8em; }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: #f1f5f9; 
+            margin: 0; 
+            color: var(--dark);
+            padding-bottom: 80px;
+        }
+
+        /* Login Screen */
+        #login-screen { 
+            position: fixed; inset: 0; 
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); 
+            display: flex; align-items: center; justify-content: center; z-index: 1000; 
+        }
+        .login-box { 
+            background: white; padding: 40px; border-radius: 16px; 
+            width: 350px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); 
+        }
+
+        /* Container & Layout */
+        .container { 
+            max-width: 1100px; margin: 30px auto; 
+            background: white; padding: 30px; border-radius: 12px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        }
+
+        .header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; padding-bottom: 15px; 
+        }
+
+        /* Inputs & Buttons */
+        input, select { 
+            width: 100%; padding: 12px; margin: 8px 0; 
+            border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;
+            transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--accent); ring: 2px var(--accent); }
+
+        button { 
+            cursor: pointer; border: none; border-radius: 8px; 
+            transition: all 0.2s; font-weight: 600; display: inline-flex; 
+            align-items: center; justify-content: center; gap: 8px;
+        }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        .btn-main { background: var(--primary); color: white; padding: 12px 24px; }
+        .btn-add { background: var(--success); color: white; padding: 10px 20px; }
+        .btn-import { background: #8b5cf6; color: white; padding: 10px 20px; }
+        .btn-danger { background: var(--danger); color: white; padding: 10px 20px; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; }
+
+        /* Search & Actions */
+        .search-box { 
+            width: 100%; padding: 14px 20px; font-size: 16px; 
+            border: 2px solid #e2e8f0; border-radius: 10px; margin-bottom: 20px; 
+        }
+        .actions-bar { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+
+        /* Table Style */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f8fafc; color: #64748b; font-weight: 600; padding: 15px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        tr:hover { background-color: #f8fafc; }
+
+        .sugestao { 
+            background: #eff6ff; padding: 10px; border-radius: 6px; 
+            font-size: 0.85em; border-left: 4px solid var(--accent); margin-bottom: 8px; 
+        }
+        .price { font-weight: 700; color: var(--primary); }
+
+        /* Modal */
+        #cotacao-modal { 
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); 
+            display: flex; align-items: center; justify-content: center; z-index: 2000; 
+            backdrop-filter: blur(4px);
+        }
+        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+
+        footer { position: fixed; bottom: 0; width: 100%; background: var(--dark); color: #94a3b8; text-align: center; padding: 15px 0; font-size: 0.8em; }
+        
         .hidden { display: none !important; }
+        .btn-delete-row { background: #fee2e2; color: #ef4444; padding: 5px 8px; font-size: 12px; }
+        .btn-delete-row:hover { background: #ef4444; color: white; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h3 id="auth-title">Entrar no Sistema</h3>
+        <h2 id="auth-title" style="margin-bottom: 20px;">Acesso Restrito</h2>
         <input type="text" id="user-name" class="hidden" placeholder="Nome Completo">
         <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp (Ex: 5527999998888)">
         <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Senha">
-        <button class="btn-main" id="btn-auth" onclick="handleAuth()">Entrar</button>
-        <button class="btn-secondary" id="btn-switch" onclick="toggleAuthMode()">Não tem conta? Registre-se</button>
-        <p id="login-error" style="color:red; font-size: 12px; margin-top:10px"></p>
+        <button class="btn-main" id="btn-auth" style="width:100%" onclick="handleAuth()">Entrar</button>
+        <button class="btn-outline" id="btn-switch" style="width:100%; margin-top:10px" onclick="toggleAuthMode()">Criar conta</button>
+        <p id="login-error" style="color:var(--danger); font-size: 12px; margin-top:15px"></p>
     </div>
 </div>
 
@@ -64,60 +128,64 @@
     <div class="container">
         <div class="header">
             <div>
-                <h2 style="margin:0">Evilasio Telefonia</h2>
-                <span class="user-info">Olá, <strong id="display-name">Carregando...</strong></span>
+                <h1 style="margin:0; font-size: 24px; color: var(--primary)">Evilasio Telefonia</h1>
+                <span class="user-info">👤 <span id="display-name">Carregando...</span></span>
             </div>
-            <button onclick="logout()" style="background: #e74c3c; color: white; padding: 8px 15px;">Sair</button>
+            <button onclick="logout()" class="btn-outline" style="border-color: var(--danger); color: var(--danger)">Sair</button>
         </div>
 
-        <div class="actions">
-            <input type="text" id="searchInput" class="search-box" style="flex:1" placeholder="🔎 Buscar modelo..." onkeyup="filterTable()">
-            <button class="btn-add" onclick="toggleForm()">+ Peça</button>
-            <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Excel</button>
+        <input type="text" id="searchInput" class="search-box" placeholder="🔎 O que você está procurando hoje?" onkeyup="filterTable()">
+
+        <div class="actions-bar">
+            <button class="btn-add" onclick="toggleForm()">➕ Nova Peça</button>
+            <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Planilha</button>
+            <button id="btn-limpar-tudo" class="btn-danger hidden" onclick="limparBancoDados()">🔥 Limpar Tudo</button>
             <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls, .csv" onchange="importExcel(event)">
         </div>
 
-        <div id="add-form" class="hidden" style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
-            <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 10px;">
-                <input type="date" id="new-data">
-                <input type="text" id="new-modelo" placeholder="Modelo">
-                <input type="number" id="new-custo" placeholder="Custo">
-                <button onclick="savePiece()" style="background: var(--success); color: white;">Salvar</button>
+        <div id="add-form" class="hidden" style="background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: end;">
+                <div><label style="font-size:12px">Data</label><input type="date" id="new-data"></div>
+                <div><label style="font-size:12px">Modelo</label><input type="text" id="new-modelo" placeholder="Ex: Moto G34"></div>
+                <div><label style="font-size:12px">Custo (R$)</label><input type="number" id="new-custo" placeholder="0.00"></div>
+                <button onclick="savePiece()" class="btn-add" style="height: 45px;">Salvar Peça</button>
             </div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Modelo</th>
-                    <th>Custo</th>
-                    <th>Sugestão e Cotação</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="15%">Data</th>
+                        <th width="35%">Modelo da Peça</th>
+                        <th width="15%">Custo</th>
+                        <th width="35%">Sugestão de Venda</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <div id="cotacao-modal" class="hidden">
     <div class="modal-content">
-        <h3 style="margin-top:0; color: var(--dark)">Nova Cotação</h3>
-        <input type="text" id="cot-peca" placeholder="Cotação de (Ex: Tela, Conector)*">
-        <input type="text" id="cot-marca" placeholder="Marca (Ex: Samsung)*">
-        <input type="text" id="cot-modelo" readonly style="background:#eee" placeholder="Modelo">
-        <input type="text" id="cot-ref" placeholder="REF (Opcional)">
-        <input type="text" id="cot-cor" placeholder="COR (Opcional)">
+        <h3 style="margin:0 0 20px 0; color: var(--primary)">📝 Gerar Cotação</h3>
+        <input type="text" id="cot-peca" placeholder="Peça (Ex: Tela Frontal)*">
+        <input type="text" id="cot-marca" placeholder="Marca (Ex: Motorola)*">
+        <input type="text" id="cot-modelo" readonly style="background:#f1f5f9; color: #64748b" placeholder="Modelo">
+        <input type="text" id="cot-ref" placeholder="Referência (Opcional)">
+        <input type="text" id="cot-cor" placeholder="Cor (Opcional)">
         <input type="text" id="cot-cliente" placeholder="Nome do Cliente*">
         
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button onclick="gerarMensagemFinal()" style="background: #25d366; color:white; flex:1; padding:12px;">Gerar WhatsApp</button>
-            <button onclick="fecharModal()" style="background: #ccc; flex:1; padding:12px;">Cancelar</button>
+        <div style="display:flex; gap:12px; margin-top:20px;">
+            <button onclick="gerarMensagemFinal()" style="background: var(--whatsapp); color:white; flex:2; padding:12px;">Enviar WhatsApp</button>
+            <button onclick="fecharModal()" style="background: #e2e8f0; color: var(--dark); flex:1; padding:12px;">Fechar</button>
         </div>
     </div>
 </div>
 
-<footer>Desenvolvido por Fabio Oliveira 2026</footer>
+<footer>&copy; 2026 Evilasio Telefonia | Desenvolvido por Fabio Oliveira</footer>
 
 <script>
     const firebaseConfig = {
@@ -135,34 +203,36 @@
 
     let isLoginMode = true;
     let userPhone = ""; 
+    const ADM_EMAIL = "tvfmrp@gmail.com";
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "Entrar no Sistema" : "Criar Nova Conta";
+        document.getElementById('auth-title').innerText = isLoginMode ? "Acesso Restrito" : "Criar Nova Conta";
         document.getElementById('user-name').classList.toggle('hidden', isLoginMode);
         document.getElementById('user-phone').classList.toggle('hidden', isLoginMode);
         document.getElementById('btn-auth').innerText = isLoginMode ? "Entrar" : "Registrar Agora";
-        document.getElementById('btn-switch').innerText = isLoginMode ? "Não tem conta? Registre-se" : "Voltar para Login";
+        document.getElementById('btn-switch').innerText = isLoginMode ? "Não tem conta? Registre-se" : "Já tenho conta";
     }
 
     function handleAuth() {
-        const name = document.getElementById('user-name').value;
-        const phone = document.getElementById('user-phone').value;
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
         const errorDiv = document.getElementById('login-error');
 
         if (isLoginMode) {
-            auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = e.message);
+            auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = "Erro: " + e.message);
         } else {
-            if(!name || !phone) return alert("Por favor, preencha nome e telefone!");
+            const name = document.getElementById('user-name').value;
+            const phone = document.getElementById('user-phone').value;
+            if(!name || !phone) return alert("Preencha nome e telefone!");
+            
             auth.createUserWithEmailAndPassword(email, pass)
                 .then(userCred => {
                     db.collection("usuarios").doc(userCred.user.uid).set({
                         nome: name,
                         telefone: phone,
                         email: email,
-                        autorizado: true 
+                        autorizado: false // Inicialmente falso por segurança
                     });
                 })
                 .catch(e => errorDiv.innerText = e.message);
@@ -172,187 +242,162 @@
     function logout() { auth.signOut().then(() => location.reload()); }
 
     auth.onAuthStateChanged(user => {
-    if (user) {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        
-        // MOSTRAR BOTÃO LIMPAR SE FOR O ADM
-        if(user.email === "tvfmrp@gmail.com") {
-            document.getElementById('btn-limpar-tudo').classList.remove('hidden');
-        }
+        if (user) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            
+            if(user.email === ADM_EMAIL) {
+                document.getElementById('btn-limpar-tudo').classList.remove('hidden');
+            }
 
-        db.collection("usuarios").doc(user.uid).get().then(doc => {
-            const userData = doc.data();
-            document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
-            userPhone = doc.exists ? userData.telefone : ""; 
-            loadData(userData?.autorizado); // Passamos se ele é autorizado
-        });
-    } else {
-        document.getElementById('login-screen').classList.remove('hidden');
-        document.getElementById('app').classList.add('hidden');
-    }
-});
+            db.collection("usuarios").doc(user.uid).get().then(doc => {
+                const userData = doc.data();
+                document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
+                userPhone = doc.exists ? userData.telefone : ""; 
+                loadData(userData?.autorizado);
+            });
+        } else {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+        }
+    });
 
     function loadData(isAutorizado) {
-    db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        snap.forEach(doc => {
-            const item = doc.data();
-            const id = doc.id; // Pegamos o ID do documento
-            const sug1 = (item.custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
-            const sug2 = (item.custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
-            
-            // Botão de excluir só aparece se for autorizado ou o ADM
-            const btnExcluir = (isAutorizado || auth.currentUser.email === "tvfmrp@gmail.com") 
-                ? `<button onclick="excluirPeca('${id}')" style="background:none; border:none; cursor:pointer; margin-left:10px">🗑️</button>` 
-                : '';
+        db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            snap.forEach(doc => {
+                const item = doc.data();
+                const id = doc.id;
+                const custo = parseFloat(item.custo) || 0;
+                const sug1 = (custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+                const sug2 = (custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+                
+                const podeExcluir = (isAutorizado || auth.currentUser.email === ADM_EMAIL);
+                const btnExcluir = podeExcluir ? `<button onclick="excluirPeca('${id}')" class="btn-delete-row">Excluir 🗑️</button>` : '';
 
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.data}</td>
-                    <td><strong>${item.modelo}</strong> ${btnExcluir}</td>
-                    <td>R$ ${parseFloat(item.custo).toFixed(2)}</td>
-                    <td>
-                        <div class="sugestao">Venda: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div>
-                        <button onclick="abrirFormularioCotacao('${item.modelo}')" 
-                                style="background:var(--whatsapp); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer">
-                            📝 Cotar Peça
-                        </button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="color:#64748b">${item.data}</td>
+                        <td>
+                            <div style="font-weight:600">${item.modelo}</div>
+                            ${btnExcluir}
+                        </td>
+                        <td class="price">${custo.toLocaleString('pt-br', {style:'currency', currency:'BRL'})}</td>
+                        <td>
+                            <div class="sugestao">Venda sugerida: <br><strong>${sug1}</strong> a <strong>${sug2}</strong></div>
+                            <button onclick="abrirFormularioCotacao('${item.modelo}')" 
+                                    style="background:var(--whatsapp); color:white; padding:6px 12px; font-size:12px">
+                                💬 Gerar Cotação
+                            </button>
+                        </td>
+                    </tr>`;
+            });
         });
-    });
-}
-
-    function abrirFormularioCotacao(modelo) {
-        document.getElementById('cot-modelo').value = modelo;
-        document.getElementById('cotacao-modal').classList.remove('hidden');
     }
 
-    function fecharModal() {
-        document.getElementById('cotacao-modal').classList.add('hidden');
+    // --- FUNÇÕES DE IMPORTAÇÃO E DATA ---
+    function converterDataExcel(valor) {
+        if (typeof valor === "number") {
+            const dataJS = new Date(Math.round((valor - 25569) * 86400 * 1000));
+            return dataJS.toLocaleDateString('pt-BR');
+        }
+        return String(valor);
     }
 
-    function gerarMensagemFinal() {
-        const peca = document.getElementById('cot-peca').value;
-        const marca = document.getElementById('cot-marca').value;
-        const modelo = document.getElementById('cot-modelo').value;
-        const ref = document.getElementById('cot-ref').value || "Não informada";
-        const cor = document.getElementById('cot-cor').value || "Não informada";
-        const cliente = document.getElementById('cot-cliente').value;
-
-        if(!peca || !marca || !cliente) return alert("Por favor, preencha os campos obrigatórios (*)");
-        if(!userPhone) return alert("Seu telefone não foi encontrado no cadastro!");
-
-        const mensagem = `Cotação de ${peca}, por favor:\n` +
-                         `Marca: ${marca}\n` +
-                         `Modelo: ${modelo}\n` +
-                         `REF: ${ref} opcional\n` +
-                         `COR: ${cor} opcional\n` +
-                         `Cliente: ${cliente}\n\n` +
-                         `*FAVOR COTAR SOMENTE SE TIVER EM ESTOQUE, NOVA E FUNCIONANDO, POR FAVOR*`;
-
-        const foneLimpo = userPhone.replace(/\D/g, ''); 
-        const url = `https://web.whatsapp.com/send?phone=${foneLimpo}&text=${encodeURIComponent(mensagem)}`;
-        
-        window.open(url, '_blank');
-        fecharModal();
-    }
-function converterDataExcel(valor) {
-    // Verifica se o valor é um número (como 44595 do Excel)
-    if (typeof valor === "number" || (!isNaN(valor) && !String(valor).includes('/'))) {
-        // A fórmula matemática para transformar os dias do Excel em Data do JavaScript (usando UTC para evitar fuso horário)
-        const dataJS = new Date(Math.round((Number(valor) - 25569) * 86400 * 1000));
-        const dia = String(dataJS.getUTCDate()).padStart(2, '0');
-        const mes = String(dataJS.getUTCMonth() + 1).padStart(2, '0');
-        const ano = dataJS.getUTCFullYear();
-        return `${dia}/${mes}/${ano}`; // Retorna prontinho: DD/MM/AAAA
-    }
-    
-    // Se por acaso já for uma data em texto (ex: "30/01/2026"), apenas retorna ela mesma
-    return String(valor);
-}
     function importExcel(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-        let count = 0;
-        
-        jsonData.slice(1).forEach(row => {
-            if (row[0] && row[1] && row[2]) {
-                db.collection("pecas").add({
-                    data: converterDataExcel(row[0]), // <--- A MUDANÇA ESTÁ AQUI
-                    modelo: String(row[1]).toUpperCase(),
-                    custo: parseFloat(row[2])
-                });
-                count++;
-            }
-        });
-        
-        alert(count + " registros importados!");
-        event.target.value = '';
-    };
-    reader.readAsArrayBuffer(file);
-}
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            let count = 0;
+            
+            jsonData.slice(1).forEach(row => {
+                if (row[0] && row[1]) {
+                    db.collection("pecas").add({
+                        data: converterDataExcel(row[0]),
+                        modelo: String(row[1]).toUpperCase(),
+                        custo: parseFloat(row[2]) || 0
+                    });
+                    count++;
+                }
+            });
+            alert(count + " Peças importadas com sucesso!");
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // --- AÇÕES DO BANCO ---
+    async function limparBancoDados() {
+        if (auth.currentUser.email !== ADM_EMAIL) return alert("Apenas Fábio Oliveira pode resetar o banco.");
+        if (confirm("🚨 ATENÇÃO: Deseja APAGAR TUDO permanentemente?")) {
+            const snap = await db.collection("pecas").get();
+            const batch = db.batch();
+            snap.docs.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+            alert("Banco de dados reiniciado!");
+        }
+    }
+
+    function excluirPeca(id) {
+        if (confirm("Excluir esta peça?")) {
+            db.collection("pecas").doc(id).delete().catch(() => alert("Erro ao excluir. Verifique permissões."));
+        }
+    }
 
     function savePiece() {
         const data = document.getElementById('new-data').value;
         const modelo = document.getElementById('new-modelo').value.toUpperCase();
         const custo = parseFloat(document.getElementById('new-custo').value);
-        if(!data || !modelo || !custo) return alert("Preencha tudo!");
-        db.collection("pecas").add({ data, modelo, custo }).then(() => {
+        if(!data || !modelo || isNaN(custo)) return alert("Preencha todos os campos corretamente.");
+        
+        // Formatar data de YYYY-MM-DD para DD/MM/YYYY
+        const dataFormatada = data.split('-').reverse().join('/');
+
+        db.collection("pecas").add({ data: dataFormatada, modelo, custo }).then(() => {
             toggleForm();
             document.getElementById('new-modelo').value = '';
             document.getElementById('new-custo').value = '';
         });
     }
 
+    // --- AUXILIARES UI ---
     function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
-
+    
     function filterTable() {
         const val = document.getElementById('searchInput').value.toUpperCase();
         const rows = document.getElementById('tableBody').getElementsByTagName('tr');
         for (let r of rows) {
-            r.style.display = r.cells[1].innerText.toUpperCase().includes(val) ? "" : "none";
+            r.style.display = r.innerText.toUpperCase().includes(val) ? "" : "none";
         }
     }
-    // Função para Limpar Tudo (Somente ADM)
-async function limparBancoDados() {
-    const user = auth.currentUser;
-    if (user.email !== "tvfmrp@gmail.com") {
-        alert("SOMENTE ADMINISTRADOR FABIO OLIVEIRA PODE ALTERAR BANCO DE DADOS");
-        return;
+
+    function abrirFormularioCotacao(modelo) {
+        document.getElementById('cot-modelo').value = modelo;
+        document.getElementById('cotacao-modal').classList.remove('hidden');
     }
 
-    if (confirm("TEM CERTEZA? Isso apagará TODAS as peças do banco!")) {
-        const snapshot = await db.collection("pecas").get();
-        const batch = db.batch();
-        snapshot.docs.forEach((doc) => {
-            batch.delete(doc.ref);
-        });
-        await batch.commit();
-        alert("Banco de dados limpo com sucesso!");
-    }
-}
+    function fecharModal() { document.getElementById('cotacao-modal').classList.add('hidden'); }
 
-// Função para Excluir Individual (Para Editores)
-function excluirPeca(id) {
-    db.collection("usuarios").doc(auth.currentUser.uid).get().then(doc => {
-        if (doc.exists && doc.data().autorizado) {
-            if (confirm("Deseja excluir esta peça?")) {
-                db.collection("pecas").doc(id).delete();
-            }
-        } else {
-            alert("Você não tem permissão de EDITOR para excluir itens.");
-        }
-    });
-}
+    function gerarMensagemFinal() {
+        const fields = ['cot-peca', 'cot-marca', 'cot-cliente'];
+        for(let f of fields) if(!document.getElementById(f).value) return alert("Preencha os campos com asterisco (*)");
+
+        const msg = `Cotação de ${document.getElementById('cot-peca').value}\n` +
+                    `Marca: ${document.getElementById('cot-marca').value}\n` +
+                    `Modelo: ${document.getElementById('cot-modelo').value}\n` +
+                    `REF: ${document.getElementById('cot-ref').value || '-'}\n` +
+                    `COR: ${document.getElementById('cot-cor').value || '-'}\n` +
+                    `Cliente: ${document.getElementById('cot-cliente').value}\n\n` +
+                    `*FAVOR COTAR SOMENTE SE TIVER EM ESTOQUE, NOVA E FUNCIONANDO.*`;
+
+        const url = `https://web.whatsapp.com/send?phone=${userPhone.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+        fecharModal();
+    }
 </script>
 </body>
 </html>
