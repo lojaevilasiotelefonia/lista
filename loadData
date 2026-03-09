@@ -29,6 +29,7 @@
         .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .btn-add { background: var(--success); color: white; padding: 10px 20px; }
         .btn-import { background: #9b59b6; color: white; padding: 10px 20px; }
+        <button id="btn-limpar-tudo" class="hidden" onclick="limparBancoDados()" style="background: #000; color: white; padding: 10px 20px;">🔥 Limpar Banco</button>
         
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--primary); color: white; padding: 12px; text-align: left; }
@@ -171,47 +172,58 @@
     function logout() { auth.signOut().then(() => location.reload()); }
 
     auth.onAuthStateChanged(user => {
-        if (user) {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            
-            db.collection("usuarios").doc(user.uid).get().then(doc => {
-                const userData = doc.data();
-                document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
-                userPhone = doc.exists ? userData.telefone : ""; 
-                loadData();
-            });
-        } else {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('app').classList.add('hidden');
+    if (user) {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        
+        // MOSTRAR BOTÃO LIMPAR SE FOR O ADM
+        if(user.email === "tvfmrp@gmail.com") {
+            document.getElementById('btn-limpar-tudo').classList.remove('hidden');
         }
-    });
 
-    function loadData() {
-        db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            snap.forEach(doc => {
-                const item = doc.data();
-                const sug1 = (item.custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
-                const sug2 = (item.custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
-                
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.data}</td>
-                        <td><strong>${item.modelo}</strong></td>
-                        <td>R$ ${parseFloat(item.custo).toFixed(2)}</td>
-                        <td>
-                            <div class="sugestao">Venda: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div>
-                            <button onclick="abrirFormularioCotacao('${item.modelo}')" 
-                                    style="background:var(--whatsapp); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer">
-                                📝 Cotar Peça
-                            </button>
-                        </td>
-                    </tr>`;
-            });
+        db.collection("usuarios").doc(user.uid).get().then(doc => {
+            const userData = doc.data();
+            document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
+            userPhone = doc.exists ? userData.telefone : ""; 
+            loadData(userData?.autorizado); // Passamos se ele é autorizado
         });
+    } else {
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('app').classList.add('hidden');
     }
+});
+
+    function loadData(isAutorizado) {
+    db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        snap.forEach(doc => {
+            const item = doc.data();
+            const id = doc.id; // Pegamos o ID do documento
+            const sug1 = (item.custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+            const sug2 = (item.custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+            
+            // Botão de excluir só aparece se for autorizado ou o ADM
+            const btnExcluir = (isAutorizado || auth.currentUser.email === "tvfmrp@gmail.com") 
+                ? `<button onclick="excluirPeca('${id}')" style="background:none; border:none; cursor:pointer; margin-left:10px">🗑️</button>` 
+                : '';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.data}</td>
+                    <td><strong>${item.modelo}</strong> ${btnExcluir}</td>
+                    <td>R$ ${parseFloat(item.custo).toFixed(2)}</td>
+                    <td>
+                        <div class="sugestao">Venda: <span class="price">${sug1}</span> a <span class="price">${sug2}</span></div>
+                        <button onclick="abrirFormularioCotacao('${item.modelo}')" 
+                                style="background:var(--whatsapp); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer">
+                            📝 Cotar Peça
+                        </button>
+                    </td>
+                </tr>`;
+        });
+    });
+}
 
     function abrirFormularioCotacao(modelo) {
         document.getElementById('cot-modelo').value = modelo;
@@ -310,6 +322,37 @@ function converterDataExcel(valor) {
             r.style.display = r.cells[1].innerText.toUpperCase().includes(val) ? "" : "none";
         }
     }
+    // Função para Limpar Tudo (Somente ADM)
+async function limparBancoDados() {
+    const user = auth.currentUser;
+    if (user.email !== "tvfmrp@gmail.com") {
+        alert("SOMENTE ADMINISTRADOR FABIO OLIVEIRA PODE ALTERAR BANCO DE DADOS");
+        return;
+    }
+
+    if (confirm("TEM CERTEZA? Isso apagará TODAS as peças do banco!")) {
+        const snapshot = await db.collection("pecas").get();
+        const batch = db.batch();
+        snapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        alert("Banco de dados limpo com sucesso!");
+    }
+}
+
+// Função para Excluir Individual (Para Editores)
+function excluirPeca(id) {
+    db.collection("usuarios").doc(auth.currentUser.uid).get().then(doc => {
+        if (doc.exists && doc.data().autorizado) {
+            if (confirm("Deseja excluir esta peça?")) {
+                db.collection("pecas").doc(id).delete();
+            }
+        } else {
+            alert("Você não tem permissão de EDITOR para excluir itens.");
+        }
+    });
+}
 </script>
 </body>
 </html>
