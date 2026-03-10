@@ -359,26 +359,30 @@
     }
 
     function importExcel(event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const wb = XLSX.read(data, {type:'array'});
-            const sheet = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-            sheet.slice(1).forEach(row => {
-                if(row[1]) {
-                    db.collection("pecas").add({
-                        data: new Date().toLocaleDateString('pt-BR'),
-                        modelo: String(row[1]).toUpperCase(),
-                        custo: parseFloat(row[2]) || 0,
-                        fornecedor: String(row[3] || 'IMPORTADO').toUpperCase()
-                    });
-                }
-            });
-            alert("Importação concluída!");
-        };
-        reader.readAsArrayBuffer(file);
-    }
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:'array'});
+        const sheet = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1});
+        
+        let count = 0;
+        sheet.slice(1).forEach(row => {
+            // row[0] = Data | row[1] = Fornecedor | row[2] = Modelo | row[3] = Custo
+            if(row[2]) { // Se houver modelo na linha
+                db.collection("pecas").add({
+                    data: row[0] ? String(row[0]) : new Date().toLocaleDateString('pt-BR'),
+                    fornecedor: row[1] ? String(row[1]).toUpperCase() : 'N/A',
+                    modelo: String(row[2]).toUpperCase(),
+                    custo: parseFloat(String(row[3]).replace('R$', '').replace('.', '').replace(',', '.')) || 0
+                });
+                count++;
+            }
+        });
+        alert(count + " Itens importados com sucesso!");
+    };
+    reader.readAsArrayBuffer(file);
+}
 </script>
 
 </body>
