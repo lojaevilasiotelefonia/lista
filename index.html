@@ -360,26 +360,51 @@
 
     function importExcel(event) {
     const file = event.target.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (e) => {
         const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, {type:'array'});
-        const sheet = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1});
-        
+        const wb = XLSX.read(data, { type: 'array' });
+        // Pega a primeira aba da planilha
+        const sheetName = wb.SheetNames[0];
+        const worksheet = wb.Sheets[sheetName];
+        // Converte para matriz (array de arrays)
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
         let count = 0;
-        sheet.slice(1).forEach(row => {
-            // row[0] = Data | row[1] = Fornecedor | row[2] = Modelo | row[3] = Custo
-            if(row[2]) { // Se houver modelo na linha
+
+        // .slice(1) pula a linha do cabeçalho (Data, Fornecedor, etc)
+        rows.slice(1).forEach(row => {
+            // Mapeamento baseado na sua imagem:
+            // row[0] = Data
+            // row[1] = Fornecedor
+            // row[2] = Modelo da Peça
+            // row[3] = Custo
+            
+            const modeloPeca = row[2] ? String(row[2]).toUpperCase().trim() : null;
+
+            if (modeloPeca) {
+                // Tratamento da Data (Excel às vezes envia número, às vezes string)
+                let dataFinal = row[0] ? String(row[0]) : new Date().toLocaleDateString('pt-BR');
+                
+                // Tratamento do Custo: Remove R$, espaços e converte vírgula em ponto
+                let custoLimpo = 0;
+                if (row[3]) {
+                    let valorStr = String(row[3]).replace('R$', '').replace(/\s/g, '').replace('.', '').replace(',', '.');
+                    custoLimpo = parseFloat(valorStr) || 0;
+                }
+
                 db.collection("pecas").add({
-                    data: row[0] ? String(row[0]) : new Date().toLocaleDateString('pt-BR'),
-                    fornecedor: row[1] ? String(row[1]).toUpperCase() : 'N/A',
-                    modelo: String(row[2]).toUpperCase(),
-                    custo: parseFloat(String(row[3]).replace('R$', '').replace('.', '').replace(',', '.')) || 0
+                    data: dataFinal,
+                    fornecedor: row[1] ? String(row[1]).toUpperCase().trim() : "N/A",
+                    modelo: modeloPeca,
+                    custo: custoLimpo
                 });
                 count++;
             }
         });
-        alert(count + " Itens importados com sucesso!");
+        alert(count + " Peças importadas com sucesso!");
     };
     reader.readAsArrayBuffer(file);
 }
