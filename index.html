@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evilasio Telefonia - Gestão Profissional</title>
+    <title>Evilasio Telefonia - Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -12,180 +12,143 @@
     
     <style>
         :root { 
-            --primary: #1e3a8a; 
-            --accent: #3b82f6;
-            --success: #10b981; 
-            --danger: #ef4444;
-            --dark: #0f172a; 
-            --light: #f8fafc;
-            --whatsapp: #22c55e;
+            --primary: #1e3a8a; --accent: #3b82f6; --success: #10b981; 
+            --danger: #ef4444; --warning: #f59e0b; --dark: #0f172a; --light: #f8fafc;
         }
 
-        body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            background: #f1f5f9; 
-            margin: 0; 
-            color: var(--dark);
-            padding-bottom: 80px;
-        }
-
-        /* Login Screen */
-        #login-screen { 
-            position: fixed; inset: 0; 
-            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); 
-            display: flex; align-items: center; justify-content: center; z-index: 1000; 
-        }
-        .login-box { 
-            background: white; padding: 40px; border-radius: 16px; 
-            width: 350px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); 
-        }
-
-        /* Container & Layout */
-        .container { 
-            max-width: 1100px; margin: 30px auto; 
-            background: white; padding: 30px; border-radius: 12px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-        }
-
-        .header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; padding-bottom: 15px; 
-        }
-
-        /* Inputs & Buttons */
-        input, select { 
-            width: 100%; padding: 12px; margin: 8px 0; 
-            border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;
-            transition: all 0.2s;
-        }
-        input:focus { outline: none; border-color: var(--accent); ring: 2px var(--accent); }
-
-        button { 
-            cursor: pointer; border: none; border-radius: 8px; 
-            transition: all 0.2s; font-weight: 600; display: inline-flex; 
-            align-items: center; justify-content: center; gap: 8px;
-        }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
-
-        .btn-main { background: var(--primary); color: white; padding: 12px 24px; }
-        .btn-add { background: var(--success); color: white; padding: 10px 20px; }
-        .btn-import { background: #8b5cf6; color: white; padding: 10px 20px; }
-        .btn-danger { background: var(--danger); color: white; padding: 10px 20px; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; }
-
-        /* Search & Actions */
-        .search-box { 
-            width: 100%; padding: 14px 20px; font-size: 16px; 
-            border: 2px solid #e2e8f0; border-radius: 10px; margin-bottom: 20px; 
-        }
-        .actions-bar { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-
-        /* Table Style */
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #f8fafc; color: #64748b; font-weight: 600; padding: 15px; text-align: left; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        tr:hover { background-color: #f8fafc; }
-
-        .sugestao { 
-            background: #eff6ff; padding: 10px; border-radius: 6px; 
-            font-size: 0.85em; border-left: 4px solid var(--accent); margin-bottom: 8px; 
-        }
-        .price { font-weight: 700; color: var(--primary); }
-
-        /* Modal */
-        #cotacao-modal { 
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); 
-            display: flex; align-items: center; justify-content: center; z-index: 2000; 
-            backdrop-filter: blur(4px);
-        }
-        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-
-        footer { position: fixed; bottom: 0; width: 100%; background: var(--dark); color: #94a3b8; text-align: center; padding: 15px 0; font-size: 0.8em; }
-        
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding-bottom: 80px; }
         .hidden { display: none !important; }
-        .btn-delete-row { background: #fee2e2; color: #ef4444; padding: 5px 8px; font-size: 12px; }
-        .btn-delete-row:hover { background: #ef4444; color: white; }
+
+        /* Auth Screen */
+        #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .login-box { background: white; padding: 30px; border-radius: 16px; width: 350px; text-align: center; }
+
+        /* Layout */
+        .container { max-width: 1200px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .tab-btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; border: none; background: #e2e8f0; font-weight: bold; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        /* Components */
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        button { cursor: pointer; border: none; border-radius: 6px; font-weight: 600; padding: 10px 15px; }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+
+        /* Badge Styles */
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: white; }
+        .bg-7d { background: var(--success); }
+        .bg-15d { background: var(--warning); }
+        .bg-30d { background: var(--danger); }
+        .update-alert { color: var(--danger); font-size: 11px; font-weight: bold; display: block; margin-top: 4px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2 id="auth-title" style="margin-bottom: 20px;">Acesso Restrito</h2>
-        <input type="text" id="user-name" class="hidden" placeholder="Nome Completo">
-        <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp (Ex: 5527999998888)">
-        <input type="email" id="email" placeholder="E-mail">
-        <input type="password" id="password" placeholder="Senha">
-        <button class="btn-main" id="btn-auth" style="width:100%" onclick="handleAuth()">Entrar</button>
-        <button class="btn-outline" id="btn-switch" style="width:100%; margin-top:10px" onclick="toggleAuthMode()">Criar conta</button>
-        <p id="login-error" style="color:var(--danger); font-size: 12px; margin-top:15px"></p>
+        <h2 id="auth-title">Evilasio Telefonia</h2>
+        <div id="auth-fields">
+            <input type="text" id="user-name" class="hidden" placeholder="Nome Completo">
+            <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp">
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="password" placeholder="Senha">
+            <button class="btn-main" style="width:100%" onclick="handleAuth()" id="btn-auth">Entrar</button>
+            
+            <div style="margin-top: 15px; font-size: 13px;">
+                <span id="btn-switch" style="color: var(--accent); cursor:pointer" onclick="toggleAuthMode()">Criar conta</span> | 
+                <span style="color: var(--danger); cursor:pointer" onclick="resetPassword()">Esqueci a senha</span>
+            </div>
+            <p id="login-error" style="color:var(--danger); font-size: 11px;"></p>
+        </div>
     </div>
 </div>
 
 <div id="app" class="hidden">
     <div class="container">
-        <div class="header">
+        <div class="header" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div>
-                <h1 style="margin:0; font-size: 24px; color: var(--primary)">Evilasio Telefonia</h1>
-                <span class="user-info">👤 <span id="display-name">Carregando...</span></span>
+                <h2 style="margin:0; color: var(--primary)">Sistema de Gestão</h2>
+                <small>👤 <span id="display-name">...</span></small>
             </div>
-            <button onclick="logout()" class="btn-outline" style="border-color: var(--danger); color: var(--danger)">Sair</button>
+            <button onclick="logout()" class="btn-outline" style="color:var(--danger); border-color:var(--danger)">Sair</button>
         </div>
 
-        <input type="text" id="searchInput" class="search-box" placeholder="🔎 O que você está procurando hoje?" onkeyup="filterTable()">
-
-        <div class="actions-bar">
-            <button class="btn-add" onclick="toggleForm()">➕ Nova Peça</button>
-            <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Planilha</button>
-            <button id="btn-limpar-tudo" class="btn-danger hidden" onclick="limparBancoDados()">🔥 Limpar Tudo</button>
-            <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls, .csv" onchange="importExcel(event)">
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('estoque')">📦 Estoque</button>
+            <button id="tab-users" class="tab-btn hidden" onclick="switchTab('usuarios')">👥 Usuários</button>
+            <button id="tab-history" class="tab-btn hidden" onclick="switchTab('historico')">📜 Histórico</button>
         </div>
 
-        <div id="add-form" class="hidden" style="background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: end;">
-                <div><label style="font-size:12px">Data</label><input type="date" id="new-data"></div>
-                <div><label style="font-size:12px">Modelo</label><input type="text" id="new-modelo" placeholder="Ex: Moto G34"></div>
-                <div><label style="font-size:12px">Custo (R$)</label><input type="number" id="new-custo" placeholder="0.00"></div>
-                <button onclick="savePiece()" class="btn-add" style="height: 45px;">Salvar Peça</button>
+        <div id="content-estoque" class="tab-content">
+            <input type="text" id="searchInput" class="search-box" style="font-size: 16px; margin-bottom: 15px;" placeholder="🔎 Pesquisar modelo ou fornecedor..." onkeyup="filterTable()">
+            
+            <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                <button class="btn-main" style="background:var(--success)" onclick="toggleForm()">+ Nova Peça</button>
+                <button class="btn-main" style="background:#8b5cf6" onclick="document.getElementById('importFile').click()">📥 Importar</button>
+                <input type="file" id="importFile" class="hidden" onchange="importExcel(event)">
+            </div>
+
+            <div id="add-form" class="hidden" style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                    <input type="date" id="new-data">
+                    <input type="text" id="new-modelo" placeholder="Modelo">
+                    <input type="text" id="new-fornecedor" placeholder="Fornecedor">
+                    <input type="number" id="new-custo" placeholder="Custo R$">
+                    <button class="btn-main" onclick="savePiece()">Salvar</button>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data/Ref</th>
+                            <th>Modelo / Fornecedor</th>
+                            <th>Custo</th>
+                            <th>Sugestão / Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
             </div>
         </div>
 
-        <div class="table-wrapper">
+        <div id="content-usuarios" class="tab-content hidden">
+            <h3>Gestão de Acessos</h3>
             <table>
                 <thead>
                     <tr>
-                        <th width="15%">Data</th>
-                        <th width="35%">Modelo da Peça</th>
-                        <th width="15%">Custo</th>
-                        <th width="35%">Sugestão de Venda</th>
+                        <th>Nome</th>
+                        <th>WhatsApp</th>
+                        <th>E-mail</th>
+                        <th>Status</th>
+                        <th>Ação</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody"></tbody>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="content-historico" class="tab-content hidden">
+            <h3>Histórico de Logins</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Usuário</th>
+                        <th>E-mail</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
             </table>
         </div>
     </div>
 </div>
-
-<div id="cotacao-modal" class="hidden">
-    <div class="modal-content">
-        <h3 style="margin:0 0 20px 0; color: var(--primary)">📝 Gerar Cotação</h3>
-        <input type="text" id="cot-peca" placeholder="Peça (Ex: Tela Frontal)*">
-        <input type="text" id="cot-marca" placeholder="Marca (Ex: Motorola)*">
-        <input type="text" id="cot-modelo" readonly style="background:#f1f5f9; color: #64748b" placeholder="Modelo">
-        <input type="text" id="cot-ref" placeholder="Referência (Opcional)">
-        <input type="text" id="cot-cor" placeholder="Cor (Opcional)">
-        <input type="text" id="cot-cliente" placeholder="Nome do Cliente*">
-        
-        <div style="display:flex; gap:12px; margin-top:20px;">
-            <button onclick="gerarMensagemFinal()" style="background: var(--whatsapp); color:white; flex:2; padding:12px;">Enviar WhatsApp</button>
-            <button onclick="fecharModal()" style="background: #e2e8f0; color: var(--dark); flex:1; padding:12px;">Fechar</button>
-        </div>
-    </div>
-</div>
-
-<footer>&copy; 2026 Evilasio Telefonia | Desenvolvido por Fabio Oliveira</footer>
 
 <script>
     const firebaseConfig = {
@@ -200,18 +163,18 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
-    let isLoginMode = true;
-    let userPhone = ""; 
     const ADM_EMAIL = "tvfmrp@gmail.com";
+    let isLoginMode = true;
+    let currentUserData = null;
+
+    // --- AUTENTICAÇÃO ---
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "Acesso Restrito" : "Criar Nova Conta";
+        document.getElementById('auth-title').innerText = isLoginMode ? "Evilasio Telefonia" : "Criar Conta";
         document.getElementById('user-name').classList.toggle('hidden', isLoginMode);
         document.getElementById('user-phone').classList.toggle('hidden', isLoginMode);
-        document.getElementById('btn-auth').innerText = isLoginMode ? "Entrar" : "Registrar Agora";
-        document.getElementById('btn-switch').innerText = isLoginMode ? "Não tem conta? Registre-se" : "Já tenho conta";
+        document.getElementById('btn-auth').innerText = isLoginMode ? "Entrar" : "Registrar";
     }
 
     function handleAuth() {
@@ -226,69 +189,139 @@
             const phone = document.getElementById('user-phone').value;
             if(!name || !phone) return alert("Preencha nome e telefone!");
             
-            auth.createUserWithEmailAndPassword(email, pass)
-                .then(userCred => {
-                    db.collection("usuarios").doc(userCred.user.uid).set({
-                        nome: name,
-                        telefone: phone,
-                        email: email,
-                        autorizado: false // Inicialmente falso por segurança
-                    });
-                })
-                .catch(e => errorDiv.innerText = e.message);
+            auth.createUserWithEmailAndPassword(email, pass).then(u => {
+                db.collection("usuarios").doc(u.user.uid).set({
+                    nome: name, telefone: phone, email: email, autorizado: (email === ADM_EMAIL)
+                });
+            }).catch(e => errorDiv.innerText = e.message);
         }
+    }
+
+    function resetPassword() {
+        const email = document.getElementById('email').value;
+        if(!email) return alert("Digite seu e-mail no campo acima.");
+        auth.sendPasswordResetEmail(email).then(() => {
+            alert("E-mail de recuperação enviado! Verifique sua caixa de entrada e a pasta SPAM.");
+        }).catch(e => alert(e.message));
     }
 
     function logout() { auth.signOut().then(() => location.reload()); }
 
     auth.onAuthStateChanged(user => {
         if (user) {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            
-            if(user.email === ADM_EMAIL) {
-                document.getElementById('btn-limpar-tudo').classList.remove('hidden');
-            }
-
             db.collection("usuarios").doc(user.uid).get().then(doc => {
-                const userData = doc.data();
-                document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
-                userPhone = doc.exists ? userData.telefone : ""; 
-                loadData(userData?.autorizado);
+                currentUserData = doc.data();
+                if(!currentUserData.autorizado && user.email !== ADM_EMAIL) {
+                    alert("Aguarde a autorização do administrador.");
+                    auth.signOut();
+                    return;
+                }
+                
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                document.getElementById('display-name').innerText = currentUserData.nome;
+
+                if(user.email === ADM_EMAIL) {
+                    document.getElementById('tab-users').classList.remove('hidden');
+                    document.getElementById('tab-history').classList.remove('hidden');
+                    loadUsers();
+                    loadHistory();
+                }
+
+                // Registrar Histórico de Login
+                db.collection("historico").add({
+                    usuario: currentUserData.nome,
+                    email: user.email,
+                    data: new Date().toLocaleString('pt-BR')
+                });
+
+                loadData();
             });
-        } else {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('app').classList.add('hidden');
         }
     });
 
-    function loadData(isAutorizado) {
+    // --- CORE LOGIC ---
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('content-' + tab).classList.remove('hidden');
+        event.currentTarget.classList.add('active');
+    }
+
+    function calculateDays(dateStr) {
+        try {
+            const parts = dateStr.split('/');
+            const date = new Date(parts[2], parts[1]-1, parts[0]);
+            const diff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+            return diff;
+        } catch(e) { return 0; }
+    }
+
+    function loadData() {
         db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             snap.forEach(doc => {
                 const item = doc.data();
-                const id = doc.id;
-                const custo = parseFloat(item.custo) || 0;
-                const sug1 = (custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
-                const sug2 = (custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+                const dias = calculateDays(item.data);
                 
-                const podeExcluir = (isAutorizado || auth.currentUser.email === ADM_EMAIL);
-                const btnExcluir = podeExcluir ? `<button onclick="excluirPeca('${id}')" class="btn-delete-row">Excluir 🗑️</button>` : '';
+                let badge = "";
+                if(dias >= 30) badge = `<span class="badge bg-30d">30d+</span>`;
+                else if(dias >= 15) badge = `<span class="badge bg-15d">15d+</span>`;
+                else if(dias >= 7) badge = `<span class="badge bg-7d">7d+</span>`;
+
+                const alertMsg = dias > 15 ? `<span class="update-alert">⚠️ Valor Desatualizado</span>` : '';
+                const custo = parseFloat(item.custo) || 0;
 
                 tbody.innerHTML += `
                     <tr>
-                        <td style="color:#64748b">${item.data}</td>
+                        <td>${item.data} ${badge}</td>
                         <td>
-                            <div style="font-weight:600">${item.modelo}</div>
-                            ${btnExcluir}
+                            <strong>${item.modelo}</strong><br>
+                            <small style="color:#64748b">Forn: ${item.fornecedor || 'N/A'}</small>
                         </td>
-                        <td class="price">${custo.toLocaleString('pt-br', {style:'currency', currency:'BRL'})}</td>
+                        <td>R$ ${custo.toFixed(2)} ${alertMsg}</td>
                         <td>
-                            <div class="sugestao">Venda sugerida: <br><strong>${sug1}</strong> a <strong>${sug2}</strong></div>
-                            <button onclick="abrirFormularioCotacao('${item.modelo}')" 
-                                    style="background:var(--whatsapp); color:white; padding:6px 12px; font-size:12px">
-                                💬 Gerar Cotação
+                            <small>Sugerido: R$ ${(custo*2.5).toFixed(2)}</small><br>
+                            <button onclick="deletePiece('${doc.id}')" style="color:red; font-size:10px; background:none; padding:0">Excluir</button>
+                        </td>
+                    </tr>`;
+            });
+        });
+    }
+
+    function savePiece() {
+        const data = document.getElementById('new-data').value;
+        const modelo = document.getElementById('new-modelo').value.toUpperCase();
+        const fornecedor = document.getElementById('new-fornecedor').value.toUpperCase();
+        const custo = document.getElementById('new-custo').value;
+        
+        if(!data || !modelo || !custo) return alert("Preencha os campos!");
+        const dataFormat = data.split('-').reverse().join('/');
+
+        db.collection("pecas").add({
+            data: dataFormat, modelo, fornecedor, custo: parseFloat(custo)
+        }).then(() => {
+            document.getElementById('add-form').classList.add('hidden');
+        });
+    }
+
+    function loadUsers() {
+        db.collection("usuarios").onSnapshot(snap => {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            snap.forEach(doc => {
+                const u = doc.data();
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${u.nome}</td>
+                        <td>${u.telefone}</td>
+                        <td>${u.email}</td>
+                        <td>${u.autorizado ? '✅ Ativo' : '⏳ Pendente'}</td>
+                        <td>
+                            <button class="btn-main" style="padding:5px; font-size:10px" onclick="toggleUserStatus('${doc.id}', ${!u.autorizado})">
+                                ${u.autorizado ? 'Desativar' : 'Autorizar'}
                             </button>
                         </td>
                     </tr>`;
@@ -296,77 +329,27 @@
         });
     }
 
-    // --- FUNÇÕES DE IMPORTAÇÃO E DATA ---
-    function converterDataExcel(valor) {
-        if (typeof valor === "number") {
-            const dataJS = new Date(Math.round((valor - 25569) * 86400 * 1000));
-            return dataJS.toLocaleDateString('pt-BR');
-        }
-        return String(valor);
+    function toggleUserStatus(id, status) {
+        db.collection("usuarios").doc(id).update({ autorizado: status });
     }
 
-    function importExcel(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-            let count = 0;
-            
-            jsonData.slice(1).forEach(row => {
-                if (row[0] && row[1]) {
-                    db.collection("pecas").add({
-                        data: converterDataExcel(row[0]),
-                        modelo: String(row[1]).toUpperCase(),
-                        custo: parseFloat(row[2]) || 0
-                    });
-                    count++;
-                }
+    function loadHistory() {
+        db.collection("historico").orderBy("data", "desc").limit(50).onSnapshot(snap => {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            snap.forEach(doc => {
+                const h = doc.data();
+                tbody.innerHTML += `<tr><td>${h.data}</td><td>${h.usuario}</td><td>${h.email}</td></tr>`;
             });
-            alert(count + " Peças importadas com sucesso!");
-        };
-        reader.readAsArrayBuffer(file);
-    }
-
-    // --- AÇÕES DO BANCO ---
-    async function limparBancoDados() {
-        if (auth.currentUser.email !== ADM_EMAIL) return alert("Apenas Fábio Oliveira pode resetar o banco.");
-        if (confirm("🚨 ATENÇÃO: Deseja APAGAR TUDO permanentemente?")) {
-            const snap = await db.collection("pecas").get();
-            const batch = db.batch();
-            snap.docs.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-            alert("Banco de dados reiniciado!");
-        }
-    }
-
-    function excluirPeca(id) {
-        if (confirm("Excluir esta peça?")) {
-            db.collection("pecas").doc(id).delete().catch(() => alert("Erro ao excluir. Verifique permissões."));
-        }
-    }
-
-    function savePiece() {
-        const data = document.getElementById('new-data').value;
-        const modelo = document.getElementById('new-modelo').value.toUpperCase();
-        const custo = parseFloat(document.getElementById('new-custo').value);
-        if(!data || !modelo || isNaN(custo)) return alert("Preencha todos os campos corretamente.");
-        
-        // Formatar data de YYYY-MM-DD para DD/MM/YYYY
-        const dataFormatada = data.split('-').reverse().join('/');
-
-        db.collection("pecas").add({ data: dataFormatada, modelo, custo }).then(() => {
-            toggleForm();
-            document.getElementById('new-modelo').value = '';
-            document.getElementById('new-custo').value = '';
         });
     }
 
-    // --- AUXILIARES UI ---
+    function deletePiece(id) {
+        if(confirm("Deseja excluir?")) db.collection("pecas").doc(id).delete();
+    }
+
     function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
-    
+
     function filterTable() {
         const val = document.getElementById('searchInput').value.toUpperCase();
         const rows = document.getElementById('tableBody').getElementsByTagName('tr');
@@ -375,29 +358,28 @@
         }
     }
 
-    function abrirFormularioCotacao(modelo) {
-        document.getElementById('cot-modelo').value = modelo;
-        document.getElementById('cotacao-modal').classList.remove('hidden');
-    }
-
-    function fecharModal() { document.getElementById('cotacao-modal').classList.add('hidden'); }
-
-    function gerarMensagemFinal() {
-        const fields = ['cot-peca', 'cot-marca', 'cot-cliente'];
-        for(let f of fields) if(!document.getElementById(f).value) return alert("Preencha os campos com asterisco (*)");
-
-        const msg = `Cotação de ${document.getElementById('cot-peca').value}\n` +
-                    `Marca: ${document.getElementById('cot-marca').value}\n` +
-                    `Modelo: ${document.getElementById('cot-modelo').value}\n` +
-                    `REF: ${document.getElementById('cot-ref').value || '-'}\n` +
-                    `COR: ${document.getElementById('cot-cor').value || '-'}\n` +
-                    `Cliente: ${document.getElementById('cot-cliente').value}\n\n` +
-                    `*FAVOR COTAR SOMENTE SE TIVER EM ESTOQUE, NOVA E FUNCIONANDO.*`;
-
-        const url = `https://web.whatsapp.com/send?phone=${userPhone.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`;
-        window.open(url, '_blank');
-        fecharModal();
+    function importExcel(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type:'array'});
+            const sheet = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
+            sheet.slice(1).forEach(row => {
+                if(row[1]) {
+                    db.collection("pecas").add({
+                        data: new Date().toLocaleDateString('pt-BR'),
+                        modelo: String(row[1]).toUpperCase(),
+                        custo: parseFloat(row[2]) || 0,
+                        fornecedor: String(row[3] || 'IMPORTADO').toUpperCase()
+                    });
+                }
+            });
+            alert("Importação concluída!");
+        };
+        reader.readAsArrayBuffer(file);
     }
 </script>
+
 </body>
 </html>
