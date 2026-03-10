@@ -259,37 +259,50 @@
     }
 
     function loadData() {
-        db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            snap.forEach(doc => {
-                const item = doc.data();
-                const dias = calculateDays(item.data);
-                
-                let badge = "";
-                if(dias >= 30) badge = `<span class="badge bg-30d">30d+</span>`;
-                else if(dias >= 15) badge = `<span class="badge bg-15d">15d+</span>`;
-                else if(dias >= 7) badge = `<span class="badge bg-7d">7d+</span>`;
+    db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        snap.forEach(doc => {
+            const item = doc.data();
+            const id = doc.id;
+            const dias = calculateDays(item.data);
+            
+            // Lógica de Alertas de Tempo
+            let badge = "";
+            if(dias >= 30) badge = `<span class="badge bg-30d">30d+</span>`;
+            else if(dias >= 15) badge = `<span class="badge bg-15d">15d+</span>`;
+            else if(dias >= 7) badge = `<span class="badge bg-7d">7d+</span>`;
 
-                const alertMsg = dias > 15 ? `<span class="update-alert">⚠️ Valor Desatualizado</span>` : '';
-                const custo = parseFloat(item.custo) || 0;
+            const alertMsg = dias > 15 ? `<span class="update-alert">⚠️ Valor Desatualizado</span>` : '';
+            
+            // Cálculos de Preço
+            const custo = parseFloat(item.custo) || 0;
+            const sug25 = (custo * 2.5).toLocaleString('pt-br', {minimumFractionDigits: 2});
+            const sug30 = (custo * 3.0).toLocaleString('pt-br', {minimumFractionDigits: 2});
+            const custoFormatado = custo.toLocaleString('pt-br', {minimumFractionDigits: 2});
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.data} ${badge}</td>
-                        <td>
-                            <strong>${item.modelo}</strong><br>
-                            <small style="color:#64748b">Forn: ${item.fornecedor || 'N/A'}</small>
-                        </td>
-                        <td>R$ ${custo.toFixed(2)} ${alertMsg}</td>
-                        <td>
-                            <small>Sugerido: R$ ${(custo*2.5).toFixed(2)}</small><br>
-                            <button onclick="deletePiece('${doc.id}')" style="color:red; font-size:10px; background:none; padding:0">Excluir</button>
-                        </td>
-                    </tr>`;
-            });
+            // Layout em linha única conforme solicitado
+            tbody.innerHTML += `
+                <tr>
+                    <td colspan="4" style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
+                        <div style="line-height: 1.6; font-size: 14px;">
+                            <strong>Data:</strong> ${item.data} ${badge} / 
+                            <strong>Fornecedor:</strong> <span style="color: var(--accent)">${item.fornecedor || 'N/A'}</span> / 
+                            <strong>Tipo e Modelo:</strong> <span style="text-transform: uppercase;">${item.modelo}</span> / 
+                            <strong>Custo:</strong> R$ ${custoFormatado} / 
+                            <strong>Sugestão valor:</strong> <span style="color: var(--success); font-weight: bold;">${sug25}</span> e <span style="color: var(--success); font-weight: bold;">${sug30}</span> (2,5x e 3x)
+                            ${alertMsg}
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <button onclick="abrirFormularioCotacao('${item.modelo}')" style="background:var(--whatsapp); color:white; padding:4px 10px; font-size:11px; margin-right:10px">💬 Gerar Cotação</button>
+                            <button onclick="deletePiece('${id}')" style="color:var(--danger); background:none; font-size:11px; text-decoration:underline; border:none; cursor:pointer">Excluir Registro</button>
+                        </div>
+                    </td>
+                </tr>`;
         });
-    }
+    });
+}
 
     function savePiece() {
         const data = document.getElementById('new-data').value;
