@@ -28,10 +28,9 @@
         .btn-main { background: var(--primary); color: white; padding: 12px 24px; }
         .btn-add { background: var(--success); color: white; padding: 10px 20px; }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; }
+        .btn-danger { background: var(--danger); color: white; padding: 5px 10px; font-size: 11px; }
         
         .status-alert { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: block; margin-top: 5px; text-align: center; }
-        .alert-7 { background: #fef3c7; color: #92400e; }
-        .alert-15 { background: #ffedd5; color: #9a3412; }
         .alert-30 { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
 
         .table-wrapper { overflow-x: auto; }
@@ -40,7 +39,7 @@
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
 
         .hidden { display: none !important; }
-        .admin-panel { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .admin-panel { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid var(--accent); }
         .perm-badge { font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-right: 2px; color: white; }
     </style>
 </head>
@@ -53,13 +52,10 @@
         <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp (55...)">
         <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Senha">
-        
         <button class="btn-main" style="width:100%" onclick="handleAuth()">Entrar</button>
-        
         <div style="margin-top: 15px; font-size: 13px;">
-            <a href="#" onclick="forgotPassword()" style="color: var(--accent); text-decoration: none;">Esqueci minha senha - Verifique pasta SPAM</a>
+            <a href="#" onclick="forgotPassword()" style="color: var(--accent); text-decoration: none;">Esqueci minha senha</a>
         </div>
-        
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
         <button class="btn-outline" style="width:100%" onclick="toggleAuthMode()">Criar nova conta</button>
     </div>
@@ -73,13 +69,13 @@
                 <span>👤 <span id="display-name">...</span></span>
             </div>
             <div>
-                <button id="btn-admin-view" class="btn-outline hidden" onclick="toggleAdminPanel()">👥 Gerenciar Equipe</button>
+                <button id="btn-admin-view" class="btn-outline hidden" onclick="toggleAdminPanel()">📊 Dashboard ADM</button>
                 <button onclick="logout()" class="btn-outline" style="border-color: var(--danger); color: var(--danger)">Sair</button>
             </div>
         </div>
 
         <div id="admin-panel" class="admin-panel hidden">
-            <h3>Controle de Acessos</h3>
+            <h3>👥 Gerenciamento de Equipe e Permissões</h3>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -98,7 +94,7 @@
         <input type="text" id="searchInput" style="padding:15px; font-size:16px" placeholder="🔎 Pesquisar peça ou fornecedor..." onkeyup="filterTable()">
 
         <div id="action-buttons" class="hidden" style="margin: 20px 0; display:flex; gap:10px">
-            <button class="btn-add" onclick="toggleForm()">➕ Nova Peça</button>
+            <button class="btn-add" onclick="toggleForm()">➕ Adicionar Peça</button>
             <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
             <button class="btn-outline" onclick="document.getElementById('importFile').click()">📥 Importar Excel</button>
         </div>
@@ -121,7 +117,8 @@
                         <th>Modelo</th>
                         <th>Fornecedor</th>
                         <th class="col-custo hidden">Custo</th>
-                        <th>Sugestão de Venda</th>
+                        <th>Sugestão Venda</th>
+                        <th class="col-delete hidden">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -144,10 +141,8 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
     const ADM_EMAIL = "tvfmrp@gmail.com";
-    let isLoginMode = true;
     let currentUserData = null;
-
-    // --- AUTENTICAÇÃO E SENHA ---
+    let isLoginMode = true;
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
@@ -156,31 +151,18 @@
         document.getElementById('user-phone').classList.toggle('hidden', isLoginMode);
     }
 
-    function forgotPassword() {
-        const email = document.getElementById('email').value;
-        if (!email) return alert("Digite seu e-mail no campo acima primeiro.");
-        auth.sendPasswordResetEmail(email)
-            .then(() => alert("E-mail de redefinição enviado! Verifique sua caixa de entrada."))
-            .catch(e => alert("Erro: " + e.message));
-    }
-
     function handleAuth() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
-        
         if (isLoginMode) {
-            auth.signInWithEmailAndPassword(email, pass)
-                .then(u => db.collection("usuarios").doc(u.user.uid).update({ lastLogin: new Date() }))
-                .catch(e => alert("Erro ao entrar: " + e.message));
+            auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
         } else {
             const name = document.getElementById('user-name').value;
             const phone = document.getElementById('user-phone').value;
-            if(!name || !phone) return alert("Preencha todos os campos.");
-
             auth.createUserWithEmailAndPassword(email, pass).then(u => {
                 db.collection("usuarios").doc(u.user.uid).set({
-                    nome: name, email, telefone: phone, 
-                    autorizado: (email === ADM_EMAIL), 
+                    nome: name, email, telefone: phone,
+                    autorizado: (email === ADM_EMAIL),
                     canSeeCost: (email === ADM_EMAIL),
                     canEdit: (email === ADM_EMAIL),
                     lastLogin: new Date()
@@ -189,14 +171,18 @@
         }
     }
 
-    // --- CONTROLE DE SESSÃO ---
+    function forgotPassword() {
+        const email = document.getElementById('email').value;
+        if (!email) return alert("Digite o e-mail primeiro.");
+        auth.sendPasswordResetEmail(email).then(() => alert("E-mail enviado!"));
+    }
 
     auth.onAuthStateChanged(user => {
         if (user) {
             db.collection("usuarios").doc(user.uid).onSnapshot(doc => {
                 currentUserData = doc.data();
-                if (!currentUserData.autorizado) {
-                    alert("Aguarde a autorização do administrador.");
+                if (!currentUserData || !currentUserData.autorizado) {
+                    alert("Aguarde autorização do ADM.");
                     logout();
                     return;
                 }
@@ -209,23 +195,74 @@
     });
 
     function setupUI() {
+        const isAdm = currentUserData.email === ADM_EMAIL;
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         document.getElementById('display-name').innerText = currentUserData.nome;
         
-        // Permissões Visuais
-        if(currentUserData.email === ADM_EMAIL) document.getElementById('btn-admin-view').classList.remove('hidden');
-        if(currentUserData.canEdit) document.getElementById('action-buttons').classList.remove('hidden');
+        // Exibir botões conforme permissão ou se for ADM
+        if (isAdm) document.getElementById('btn-admin-view').classList.remove('hidden');
+        if (currentUserData.canEdit || isAdm) document.getElementById('action-buttons').classList.remove('hidden');
         
-        const custoCols = document.querySelectorAll('.col-custo');
-        custoCols.forEach(c => c.classList.toggle('hidden', !currentUserData.canSeeCost));
+        // Colunas de custo e exclusão
+        const costCols = document.querySelectorAll('.col-custo');
+        costCols.forEach(c => c.classList.toggle('hidden', !(currentUserData.canSeeCost || isAdm)));
+        
+        const delCols = document.querySelectorAll('.col-delete');
+        delCols.forEach(c => c.classList.toggle('hidden', !(currentUserData.canEdit || isAdm)));
 
         loadData();
     }
 
-    function logout() { auth.signOut(); }
+    function loadData() {
+        db.collection("pecas").orderBy("timestamp", "desc").onSnapshot(snap => {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            const isAdm = currentUserData.email === ADM_EMAIL;
+            const canSeeCost = currentUserData.canSeeCost || isAdm;
+            const canEdit = currentUserData.canEdit || isAdm;
 
-    // --- PAINEL ADM ---
+            snap.forEach(doc => {
+                const item = doc.data();
+                const custo = item.custo || 0;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.data}</td>
+                        <td style="font-weight:bold">${item.modelo}</td>
+                        <td>${item.fornecedor}</td>
+                        <td class="col-custo ${canSeeCost ? '' : 'hidden'}">R$ ${custo.toFixed(2)}</td>
+                        <td>R$ ${(custo * 3).toFixed(2)}</td>
+                        <td class="col-delete ${canEdit ? '' : 'hidden'}">
+                            <button class="btn-danger" onclick="deleteRecord('${doc.id}')">🗑️ Excluir</button>
+                        </td>
+                    </tr>`;
+            });
+        });
+    }
+
+    function deleteRecord(id) {
+        if(confirm("Deseja excluir este registro permanentemente?")) {
+            db.collection("pecas").doc(id).delete();
+        }
+    }
+
+    function savePiece() {
+        const dataVal = document.getElementById('new-data').value;
+        const modelo = document.getElementById('new-modelo').value.toUpperCase();
+        const fornecedor = document.getElementById('new-fornecedor').value.toUpperCase();
+        const custo = parseFloat(document.getElementById('new-custo').value);
+
+        if(!dataVal || !modelo) return alert("Preencha os campos!");
+
+        db.collection("pecas").add({
+            data: dataVal.split('-').reverse().join('/'),
+            timestamp: new Date(dataVal + "T12:00:00"),
+            modelo, fornecedor, custo
+        }).then(() => {
+            toggleForm();
+            alert("Salvo!");
+        });
+    }
 
     function toggleAdminPanel() {
         const panel = document.getElementById('admin-panel');
@@ -240,16 +277,15 @@
             snap.forEach(doc => {
                 const u = doc.data();
                 if(u.email === ADM_EMAIL) return;
-
                 utbody.innerHTML += `<tr>
-                    <td><strong>${u.nome}</strong><br><small>${u.email}</small></td>
+                    <td>${u.nome}</td>
                     <td>${u.autorizado ? '✅ Ativo' : '❌ Bloqueado'}</td>
                     <td>
                         <span class="perm-badge" style="background:${u.canSeeCost ? 'var(--success)' : '#ccc'}">Ver Custo</span>
-                        <span class="perm-badge" style="background:${u.canEdit ? 'var(--success)' : '#ccc'}">Editar</span>
+                        <span class="perm-badge" style="background:${u.canEdit ? 'var(--success)' : '#ccc'}">Editar/Excluir</span>
                     </td>
                     <td>
-                        <button onclick="togglePerm('${doc.id}', 'autorizado', ${u.autorizado})">Bloquear/Ativar</button>
+                        <button onclick="togglePerm('${doc.id}', 'autorizado', ${u.autorizado})">Ativar/Bloquear</button>
                         <button onclick="togglePerm('${doc.id}', 'canSeeCost', ${u.canSeeCost})">Custo</button>
                         <button onclick="togglePerm('${doc.id}', 'canEdit', ${u.canEdit})">Editar</button>
                     </td>
@@ -258,60 +294,13 @@
         });
     }
 
-    function togglePerm(id, campo, statusAtual) {
-        let update = {};
-        update[campo] = !statusAtual;
-        db.collection("usuarios").doc(id).update(update).then(() => renderUserList());
-    }
-
-    // --- GESTÃO DE DADOS ---
-
-    function loadData() {
-        db.collection("pecas").orderBy("timestamp", "desc").onSnapshot(snap => {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            
-            snap.forEach(doc => {
-                const item = doc.data();
-                const dataPeca = item.timestamp ? item.timestamp.toDate() : new Date();
-                const hoje = new Date();
-                const diffDias = Math.floor((hoje - dataPeca) / (1000 * 60 * 60 * 24));
-
-                let statusHtml = '';
-                if (diffDias >= 30) statusHtml = `<span class="status-alert alert-30">${diffDias} dias - Desatualizado</span>`;
-                else if (diffDias >= 15) statusHtml = `<span class="status-alert alert-15">${diffDias} dias - Antigo</span>`;
-
-                const custo = item.custo || 0;
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.data}<br>${statusHtml}</td>
-                        <td style="font-weight:bold">${item.modelo}</td>
-                        <td>${item.fornecedor || '---'}</td>
-                        <td class="col-custo ${currentUserData.canSeeCost ? '' : 'hidden'}">R$ ${custo.toFixed(2)}</td>
-                        <td>R$ ${(custo * 2.5).toFixed(2)} - ${(custo * 3).toFixed(2)}</td>
-                    </tr>`;
-            });
-        });
-    }
-
-    function savePiece() {
-        const dataVal = document.getElementById('new-data').value;
-        const modelo = document.getElementById('new-modelo').value.toUpperCase();
-        const fornecedor = document.getElementById('new-fornecedor').value.toUpperCase();
-        const custo = parseFloat(document.getElementById('new-custo').value);
-
-        db.collection("pecas").add({
-            data: dataVal.split('-').reverse().join('/'),
-            timestamp: new Date(dataVal + "T12:00:00"),
-            modelo, fornecedor, custo
-        }).then(() => {
-            toggleForm();
-            alert("Peça adicionada!");
-        });
+    function togglePerm(id, campo, status) {
+        let up = {}; up[campo] = !status;
+        db.collection("usuarios").doc(id).update(up).then(() => renderUserList());
     }
 
     function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
-    
+    function logout() { auth.signOut(); }
     function filterTable() {
         const val = document.getElementById('searchInput').value.toUpperCase();
         const rows = document.querySelectorAll('#tableBody tr');
