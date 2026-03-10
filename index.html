@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evilasio Telefonia - ERP Pro</title>
+    <title>Evilasio Telefonia - Gestão Profissional</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -12,52 +12,115 @@
     
     <style>
         :root { 
-            --primary: #1e3a8a; --accent: #3b82f6; --success: #10b981; 
-            --warning: #f59e0b; --danger: #ef4444; --dark: #0f172a; --light: #f8fafc;
+            --primary: #1e3a8a; 
+            --accent: #3b82f6;
+            --success: #10b981; 
+            --danger: #ef4444;
+            --dark: #0f172a; 
+            --light: #f8fafc;
+            --whatsapp: #22c55e;
         }
 
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding-bottom: 80px; }
-        #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-box { background: white; padding: 40px; border-radius: 16px; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .container { max-width: 1200px; margin: 30px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; padding-bottom: 15px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
-        
-        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; transition: 0.2s; }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: #f1f5f9; 
+            margin: 0; 
+            color: var(--dark);
+            padding-bottom: 80px;
+        }
+
+        /* Login Screen */
+        #login-screen { 
+            position: fixed; inset: 0; 
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); 
+            display: flex; align-items: center; justify-content: center; z-index: 1000; 
+        }
+        .login-box { 
+            background: white; padding: 40px; border-radius: 16px; 
+            width: 350px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); 
+        }
+
+        /* Container & Layout */
+        .container { 
+            max-width: 1100px; margin: 30px auto; 
+            background: white; padding: 30px; border-radius: 12px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        }
+
+        .header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; padding-bottom: 15px; 
+        }
+
+        /* Inputs & Buttons */
+        input, select { 
+            width: 100%; padding: 12px; margin: 8px 0; 
+            border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;
+            transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--accent); ring: 2px var(--accent); }
+
+        button { 
+            cursor: pointer; border: none; border-radius: 8px; 
+            transition: all 0.2s; font-weight: 600; display: inline-flex; 
+            align-items: center; justify-content: center; gap: 8px;
+        }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
         .btn-main { background: var(--primary); color: white; padding: 12px 24px; }
         .btn-add { background: var(--success); color: white; padding: 10px 20px; }
+        .btn-import { background: #8b5cf6; color: white; padding: 10px 20px; }
+        .btn-danger { background: var(--danger); color: white; padding: 10px 20px; }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; }
-        .btn-danger { background: var(--danger); color: white; padding: 5px 10px; font-size: 11px; }
-        
-        .status-alert { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: block; margin-top: 5px; text-align: center; }
-        .alert-30 { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
 
+        /* Search & Actions */
+        .search-box { 
+            width: 100%; padding: 14px 20px; font-size: 16px; 
+            border: 2px solid #e2e8f0; border-radius: 10px; margin-bottom: 20px; 
+        }
+        .actions-bar { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+
+        /* Table Style */
         .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f8fafc; padding: 15px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 13px; }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f8fafc; color: #64748b; font-weight: 600; padding: 15px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        tr:hover { background-color: #f8fafc; }
 
+        .sugestao { 
+            background: #eff6ff; padding: 10px; border-radius: 6px; 
+            font-size: 0.85em; border-left: 4px solid var(--accent); margin-bottom: 8px; 
+        }
+        .price { font-weight: 700; color: var(--primary); }
+
+        /* Modal */
+        #cotacao-modal { 
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); 
+            display: flex; align-items: center; justify-content: center; z-index: 2000; 
+            backdrop-filter: blur(4px);
+        }
+        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+
+        footer { position: fixed; bottom: 0; width: 100%; background: var(--dark); color: #94a3b8; text-align: center; padding: 15px 0; font-size: 0.8em; }
+        
         .hidden { display: none !important; }
-        .admin-panel { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid var(--accent); }
-        .perm-badge { font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-right: 2px; color: white; }
+        .btn-delete-row { background: #fee2e2; color: #ef4444; padding: 5px 8px; font-size: 12px; }
+        .btn-delete-row:hover { background: #ef4444; color: white; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2 id="auth-title">Acesso Evilasio</h2>
+        <h2 id="auth-title" style="margin-bottom: 20px;">Acesso Restrito</h2>
         <input type="text" id="user-name" class="hidden" placeholder="Nome Completo">
-        <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp (55...)">
+        <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp (Ex: 5527999998888)">
         <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Senha">
-        <button class="btn-main" style="width:100%" onclick="handleAuth()">Entrar</button>
-        <div style="margin-top: 15px; font-size: 13px;">
-            <a href="#" onclick="forgotPassword()" style="color: var(--accent); text-decoration: none;">Esqueci minha senha</a>
-        </div>
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-        <button class="btn-outline" style="width:100%" onclick="toggleAuthMode()">Criar nova conta</button>
+        <button class="btn-main" id="btn-auth" style="width:100%" onclick="handleAuth()">Entrar</button>
+        <button class="btn-outline" id="btn-switch" style="width:100%; margin-top:10px" onclick="toggleAuthMode()">Criar conta</button>
+        <p id="login-error" style="color:var(--danger); font-size: 12px; margin-top:15px"></p>
     </div>
 </div>
 
@@ -65,47 +128,27 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1 style="margin:0; color: var(--primary)">Evilasio Telefonia</h1>
-                <span>👤 <span id="display-name">...</span></span>
+                <h1 style="margin:0; font-size: 24px; color: var(--primary)">Evilasio Telefonia</h1>
+                <span class="user-info">👤 <span id="display-name">Carregando...</span></span>
             </div>
-            <div>
-                <button id="btn-admin-view" class="btn-outline hidden" onclick="toggleAdminPanel()">📊 Dashboard ADM</button>
-                <button onclick="logout()" class="btn-outline" style="border-color: var(--danger); color: var(--danger)">Sair</button>
-            </div>
+            <button onclick="logout()" class="btn-outline" style="border-color: var(--danger); color: var(--danger)">Sair</button>
         </div>
 
-        <div id="admin-panel" class="admin-panel hidden">
-            <h3>👥 Gerenciamento de Equipe e Permissões</h3>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Usuário</th>
-                            <th>Status</th>
-                            <th>Permissões Extras</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody"></tbody>
-                </table>
-            </div>
+        <input type="text" id="searchInput" class="search-box" placeholder="🔎 O que você está procurando hoje?" onkeyup="filterTable()">
+
+        <div class="actions-bar">
+            <button class="btn-add" onclick="toggleForm()">➕ Nova Peça</button>
+            <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Planilha</button>
+            <button id="btn-limpar-tudo" class="btn-danger hidden" onclick="limparBancoDados()">🔥 Limpar Tudo</button>
+            <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls, .csv" onchange="importExcel(event)">
         </div>
 
-        <input type="text" id="searchInput" style="padding:15px; font-size:16px" placeholder="🔎 Pesquisar peça ou fornecedor..." onkeyup="filterTable()">
-
-        <div id="action-buttons" class="hidden" style="margin: 20px 0; display:flex; gap:10px">
-            <button class="btn-add" onclick="toggleForm()">➕ Adicionar Peça</button>
-            <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
-            <button class="btn-outline" onclick="document.getElementById('importFile').click()">📥 Importar Excel</button>
-        </div>
-
-        <div id="add-form" class="hidden" style="background:#f1f5f9; padding:20px; border-radius:10px; margin-bottom:20px">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-                <input type="date" id="new-data">
-                <input type="text" id="new-modelo" placeholder="Modelo">
-                <input type="text" id="new-fornecedor" placeholder="Fornecedor">
-                <input type="number" id="new-custo" placeholder="Custo R$">
-                <button onclick="savePiece()" class="btn-add">Salvar Registro</button>
+        <div id="add-form" class="hidden" style="background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: end;">
+                <div><label style="font-size:12px">Data</label><input type="date" id="new-data"></div>
+                <div><label style="font-size:12px">Modelo</label><input type="text" id="new-modelo" placeholder="Ex: Moto G34"></div>
+                <div><label style="font-size:12px">Custo (R$)</label><input type="number" id="new-custo" placeholder="0.00"></div>
+                <button onclick="savePiece()" class="btn-add" style="height: 45px;">Salvar Peça</button>
             </div>
         </div>
 
@@ -113,12 +156,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Data</th>
-                        <th>Modelo</th>
-                        <th>Fornecedor</th>
-                        <th class="col-custo hidden">Custo</th>
-                        <th>Sugestão Venda</th>
-                        <th class="col-delete hidden">Ações</th>
+                        <th width="15%">Data</th>
+                        <th width="35%">Modelo da Peça</th>
+                        <th width="15%">Custo</th>
+                        <th width="35%">Sugestão de Venda</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -126,6 +167,25 @@
         </div>
     </div>
 </div>
+
+<div id="cotacao-modal" class="hidden">
+    <div class="modal-content">
+        <h3 style="margin:0 0 20px 0; color: var(--primary)">📝 Gerar Cotação</h3>
+        <input type="text" id="cot-peca" placeholder="Peça (Ex: Tela Frontal)*">
+        <input type="text" id="cot-marca" placeholder="Marca (Ex: Motorola)*">
+        <input type="text" id="cot-modelo" readonly style="background:#f1f5f9; color: #64748b" placeholder="Modelo">
+        <input type="text" id="cot-ref" placeholder="Referência (Opcional)">
+        <input type="text" id="cot-cor" placeholder="Cor (Opcional)">
+        <input type="text" id="cot-cliente" placeholder="Nome do Cliente*">
+        
+        <div style="display:flex; gap:12px; margin-top:20px;">
+            <button onclick="gerarMensagemFinal()" style="background: var(--whatsapp); color:white; flex:2; padding:12px;">Enviar WhatsApp</button>
+            <button onclick="fecharModal()" style="background: #e2e8f0; color: var(--dark); flex:1; padding:12px;">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<footer>&copy; 2026 Evilasio Telefonia | Desenvolvido por Fabio Oliveira</footer>
 
 <script>
     const firebaseConfig = {
@@ -140,171 +200,203 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const ADM_EMAIL = "tvfmrp@gmail.com";
-    let currentUserData = null;
+
     let isLoginMode = true;
+    let userPhone = ""; 
+    const ADM_EMAIL = "tvfmrp@gmail.com";
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "Acesso Evilasio" : "Criar Conta";
+        document.getElementById('auth-title').innerText = isLoginMode ? "Acesso Restrito" : "Criar Nova Conta";
         document.getElementById('user-name').classList.toggle('hidden', isLoginMode);
         document.getElementById('user-phone').classList.toggle('hidden', isLoginMode);
+        document.getElementById('btn-auth').innerText = isLoginMode ? "Entrar" : "Registrar Agora";
+        document.getElementById('btn-switch').innerText = isLoginMode ? "Não tem conta? Registre-se" : "Já tenho conta";
     }
 
     function handleAuth() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
+        const errorDiv = document.getElementById('login-error');
+
         if (isLoginMode) {
-            auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
+            auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = "Erro: " + e.message);
         } else {
             const name = document.getElementById('user-name').value;
             const phone = document.getElementById('user-phone').value;
-            auth.createUserWithEmailAndPassword(email, pass).then(u => {
-                db.collection("usuarios").doc(u.user.uid).set({
-                    nome: name, email, telefone: phone,
-                    autorizado: (email === ADM_EMAIL),
-                    canSeeCost: (email === ADM_EMAIL),
-                    canEdit: (email === ADM_EMAIL),
-                    lastLogin: new Date()
-                });
-            });
+            if(!name || !phone) return alert("Preencha nome e telefone!");
+            
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then(userCred => {
+                    db.collection("usuarios").doc(userCred.user.uid).set({
+                        nome: name,
+                        telefone: phone,
+                        email: email,
+                        autorizado: false // Inicialmente falso por segurança
+                    });
+                })
+                .catch(e => errorDiv.innerText = e.message);
         }
     }
 
-    function forgotPassword() {
-        const email = document.getElementById('email').value;
-        if (!email) return alert("Digite o e-mail primeiro.");
-        auth.sendPasswordResetEmail(email).then(() => alert("E-mail enviado!"));
-    }
+    function logout() { auth.signOut().then(() => location.reload()); }
 
     auth.onAuthStateChanged(user => {
         if (user) {
-            db.collection("usuarios").doc(user.uid).onSnapshot(doc => {
-                currentUserData = doc.data();
-                if (!currentUserData || !currentUserData.autorizado) {
-                    alert("Aguarde autorização do ADM.");
-                    logout();
-                    return;
-                }
-                setupUI();
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            
+            if(user.email === ADM_EMAIL) {
+                document.getElementById('btn-limpar-tudo').classList.remove('hidden');
+            }
+
+            db.collection("usuarios").doc(user.uid).get().then(doc => {
+                const userData = doc.data();
+                document.getElementById('display-name').innerText = doc.exists ? userData.nome : user.email.split('@')[0];
+                userPhone = doc.exists ? userData.telefone : ""; 
+                loadData(userData?.autorizado);
             });
         } else {
-            document.getElementById('app').classList.add('hidden');
             document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
         }
     });
 
-    function setupUI() {
-        const isAdm = currentUserData.email === ADM_EMAIL;
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        document.getElementById('display-name').innerText = currentUserData.nome;
-        
-        // Exibir botões conforme permissão ou se for ADM
-        if (isAdm) document.getElementById('btn-admin-view').classList.remove('hidden');
-        if (currentUserData.canEdit || isAdm) document.getElementById('action-buttons').classList.remove('hidden');
-        
-        // Colunas de custo e exclusão
-        const costCols = document.querySelectorAll('.col-custo');
-        costCols.forEach(c => c.classList.toggle('hidden', !(currentUserData.canSeeCost || isAdm)));
-        
-        const delCols = document.querySelectorAll('.col-delete');
-        delCols.forEach(c => c.classList.toggle('hidden', !(currentUserData.canEdit || isAdm)));
-
-        loadData();
-    }
-
-    function loadData() {
-        db.collection("pecas").orderBy("timestamp", "desc").onSnapshot(snap => {
+    function loadData(isAutorizado) {
+        db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-            const isAdm = currentUserData.email === ADM_EMAIL;
-            const canSeeCost = currentUserData.canSeeCost || isAdm;
-            const canEdit = currentUserData.canEdit || isAdm;
-
             snap.forEach(doc => {
                 const item = doc.data();
-                const custo = item.custo || 0;
+                const id = doc.id;
+                const custo = parseFloat(item.custo) || 0;
+                const sug1 = (custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+                const sug2 = (custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+                
+                const podeExcluir = (isAutorizado || auth.currentUser.email === ADM_EMAIL);
+                const btnExcluir = podeExcluir ? `<button onclick="excluirPeca('${id}')" class="btn-delete-row">Excluir 🗑️</button>` : '';
+
                 tbody.innerHTML += `
                     <tr>
-                        <td>${item.data}</td>
-                        <td style="font-weight:bold">${item.modelo}</td>
-                        <td>${item.fornecedor}</td>
-                        <td class="col-custo ${canSeeCost ? '' : 'hidden'}">R$ ${custo.toFixed(2)}</td>
-                        <td>R$ ${(custo * 3).toFixed(2)}</td>
-                        <td class="col-delete ${canEdit ? '' : 'hidden'}">
-                            <button class="btn-danger" onclick="deleteRecord('${doc.id}')">🗑️ Excluir</button>
+                        <td style="color:#64748b">${item.data}</td>
+                        <td>
+                            <div style="font-weight:600">${item.modelo}</div>
+                            ${btnExcluir}
+                        </td>
+                        <td class="price">${custo.toLocaleString('pt-br', {style:'currency', currency:'BRL'})}</td>
+                        <td>
+                            <div class="sugestao">Venda sugerida: <br><strong>${sug1}</strong> a <strong>${sug2}</strong></div>
+                            <button onclick="abrirFormularioCotacao('${item.modelo}')" 
+                                    style="background:var(--whatsapp); color:white; padding:6px 12px; font-size:12px">
+                                💬 Gerar Cotação
+                            </button>
                         </td>
                     </tr>`;
             });
         });
     }
 
-    function deleteRecord(id) {
-        if(confirm("Deseja excluir este registro permanentemente?")) {
-            db.collection("pecas").doc(id).delete();
+    // --- FUNÇÕES DE IMPORTAÇÃO E DATA ---
+    function converterDataExcel(valor) {
+        if (typeof valor === "number") {
+            const dataJS = new Date(Math.round((valor - 25569) * 86400 * 1000));
+            return dataJS.toLocaleDateString('pt-BR');
+        }
+        return String(valor);
+    }
+
+    function importExcel(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            let count = 0;
+            
+            jsonData.slice(1).forEach(row => {
+                if (row[0] && row[1]) {
+                    db.collection("pecas").add({
+                        data: converterDataExcel(row[0]),
+                        modelo: String(row[1]).toUpperCase(),
+                        custo: parseFloat(row[2]) || 0
+                    });
+                    count++;
+                }
+            });
+            alert(count + " Peças importadas com sucesso!");
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // --- AÇÕES DO BANCO ---
+    async function limparBancoDados() {
+        if (auth.currentUser.email !== ADM_EMAIL) return alert("Apenas Fábio Oliveira pode resetar o banco.");
+        if (confirm("🚨 ATENÇÃO: Deseja APAGAR TUDO permanentemente?")) {
+            const snap = await db.collection("pecas").get();
+            const batch = db.batch();
+            snap.docs.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+            alert("Banco de dados reiniciado!");
+        }
+    }
+
+    function excluirPeca(id) {
+        if (confirm("Excluir esta peça?")) {
+            db.collection("pecas").doc(id).delete().catch(() => alert("Erro ao excluir. Verifique permissões."));
         }
     }
 
     function savePiece() {
-        const dataVal = document.getElementById('new-data').value;
+        const data = document.getElementById('new-data').value;
         const modelo = document.getElementById('new-modelo').value.toUpperCase();
-        const fornecedor = document.getElementById('new-fornecedor').value.toUpperCase();
         const custo = parseFloat(document.getElementById('new-custo').value);
+        if(!data || !modelo || isNaN(custo)) return alert("Preencha todos os campos corretamente.");
+        
+        // Formatar data de YYYY-MM-DD para DD/MM/YYYY
+        const dataFormatada = data.split('-').reverse().join('/');
 
-        if(!dataVal || !modelo) return alert("Preencha os campos!");
-
-        db.collection("pecas").add({
-            data: dataVal.split('-').reverse().join('/'),
-            timestamp: new Date(dataVal + "T12:00:00"),
-            modelo, fornecedor, custo
-        }).then(() => {
+        db.collection("pecas").add({ data: dataFormatada, modelo, custo }).then(() => {
             toggleForm();
-            alert("Salvo!");
+            document.getElementById('new-modelo').value = '';
+            document.getElementById('new-custo').value = '';
         });
     }
 
-    function toggleAdminPanel() {
-        const panel = document.getElementById('admin-panel');
-        panel.classList.toggle('hidden');
-        if(!panel.classList.contains('hidden')) renderUserList();
-    }
-
-    function renderUserList() {
-        db.collection("usuarios").get().then(snap => {
-            const utbody = document.getElementById('userTableBody');
-            utbody.innerHTML = '';
-            snap.forEach(doc => {
-                const u = doc.data();
-                if(u.email === ADM_EMAIL) return;
-                utbody.innerHTML += `<tr>
-                    <td>${u.nome}</td>
-                    <td>${u.autorizado ? '✅ Ativo' : '❌ Bloqueado'}</td>
-                    <td>
-                        <span class="perm-badge" style="background:${u.canSeeCost ? 'var(--success)' : '#ccc'}">Ver Custo</span>
-                        <span class="perm-badge" style="background:${u.canEdit ? 'var(--success)' : '#ccc'}">Editar/Excluir</span>
-                    </td>
-                    <td>
-                        <button onclick="togglePerm('${doc.id}', 'autorizado', ${u.autorizado})">Ativar/Bloquear</button>
-                        <button onclick="togglePerm('${doc.id}', 'canSeeCost', ${u.canSeeCost})">Custo</button>
-                        <button onclick="togglePerm('${doc.id}', 'canEdit', ${u.canEdit})">Editar</button>
-                    </td>
-                </tr>`;
-            });
-        });
-    }
-
-    function togglePerm(id, campo, status) {
-        let up = {}; up[campo] = !status;
-        db.collection("usuarios").doc(id).update(up).then(() => renderUserList());
-    }
-
+    // --- AUXILIARES UI ---
     function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
-    function logout() { auth.signOut(); }
+    
     function filterTable() {
         const val = document.getElementById('searchInput').value.toUpperCase();
-        const rows = document.querySelectorAll('#tableBody tr');
-        rows.forEach(r => r.style.display = r.innerText.toUpperCase().includes(val) ? "" : "none");
+        const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        for (let r of rows) {
+            r.style.display = r.innerText.toUpperCase().includes(val) ? "" : "none";
+        }
+    }
+
+    function abrirFormularioCotacao(modelo) {
+        document.getElementById('cot-modelo').value = modelo;
+        document.getElementById('cotacao-modal').classList.remove('hidden');
+    }
+
+    function fecharModal() { document.getElementById('cotacao-modal').classList.add('hidden'); }
+
+    function gerarMensagemFinal() {
+        const fields = ['cot-peca', 'cot-marca', 'cot-cliente'];
+        for(let f of fields) if(!document.getElementById(f).value) return alert("Preencha os campos com asterisco (*)");
+
+        const msg = `Cotação de ${document.getElementById('cot-peca').value}\n` +
+                    `Marca: ${document.getElementById('cot-marca').value}\n` +
+                    `Modelo: ${document.getElementById('cot-modelo').value}\n` +
+                    `REF: ${document.getElementById('cot-ref').value || '-'}\n` +
+                    `COR: ${document.getElementById('cot-cor').value || '-'}\n` +
+                    `Cliente: ${document.getElementById('cot-cliente').value}\n\n` +
+                    `*FAVOR COTAR SOMENTE SE TIVER EM ESTOQUE, NOVA E FUNCIONANDO.*`;
+
+        const url = `https://web.whatsapp.com/send?phone=${userPhone.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+        fecharModal();
     }
 </script>
 </body>
