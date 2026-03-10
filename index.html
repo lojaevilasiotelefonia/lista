@@ -12,115 +12,50 @@
     
     <style>
         :root { 
-            --primary: #1e3a8a; 
-            --accent: #3b82f6;
-            --success: #10b981; 
-            --danger: #ef4444;
-            --dark: #0f172a; 
-            --light: #f8fafc;
-            --whatsapp: #22c55e;
+            --primary: #1e3a8a; --accent: #3b82f6; --success: #10b981; 
+            --warning: #f59e0b; --danger: #ef4444; --dark: #0f172a; --light: #f8fafc;
         }
 
-        body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            background: #f1f5f9; 
-            margin: 0; 
-            color: var(--dark);
-            padding-bottom: 80px;
-        }
-
-        /* Login Screen */
-        #login-screen { 
-            position: fixed; inset: 0; 
-            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); 
-            display: flex; align-items: center; justify-content: center; z-index: 1000; 
-        }
-        .login-box { 
-            background: white; padding: 40px; border-radius: 16px; 
-            width: 350px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); 
-        }
-
-        /* Container & Layout */
-        .container { 
-            max-width: 1100px; margin: 30px auto; 
-            background: white; padding: 30px; border-radius: 12px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-        }
-
-        .header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; padding-bottom: 15px; 
-        }
-
-        /* Inputs & Buttons */
-        input, select { 
-            width: 100%; padding: 12px; margin: 8px 0; 
-            border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;
-            transition: all 0.2s;
-        }
-        input:focus { outline: none; border-color: var(--accent); ring: 2px var(--accent); }
-
-        button { 
-            cursor: pointer; border: none; border-radius: 8px; 
-            transition: all 0.2s; font-weight: 600; display: inline-flex; 
-            align-items: center; justify-content: center; gap: 8px;
-        }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
-
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding-bottom: 80px; }
+        #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .login-box { background: white; padding: 40px; border-radius: 16px; width: 350px; text-align: center; }
+        .container { max-width: 1200px; margin: 30px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; padding-bottom: 15px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+        
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; transition: 0.2s; }
         .btn-main { background: var(--primary); color: white; padding: 12px 24px; }
         .btn-add { background: var(--success); color: white; padding: 10px 20px; }
-        .btn-import { background: #8b5cf6; color: white; padding: 10px 20px; }
-        .btn-danger { background: var(--danger); color: white; padding: 10px 20px; }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; }
-
-        /* Search & Actions */
-        .search-box { 
-            width: 100%; padding: 14px 20px; font-size: 16px; 
-            border: 2px solid #e2e8f0; border-radius: 10px; margin-bottom: 20px; 
-        }
-        .actions-bar { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-
-        /* Table Style */
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #f8fafc; color: #64748b; font-weight: 600; padding: 15px; text-align: left; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        tr:hover { background-color: #f8fafc; }
-
-        .sugestao { 
-            background: #eff6ff; padding: 10px; border-radius: 6px; 
-            font-size: 0.85em; border-left: 4px solid var(--accent); margin-bottom: 8px; 
-        }
-        .price { font-weight: 700; color: var(--primary); }
-
-        /* Modal */
-        #cotacao-modal { 
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); 
-            display: flex; align-items: center; justify-content: center; z-index: 2000; 
-            backdrop-filter: blur(4px);
-        }
-        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-
-        footer { position: fixed; bottom: 0; width: 100%; background: var(--dark); color: #94a3b8; text-align: center; padding: 15px 0; font-size: 0.8em; }
         
+        /* Status de Alerta */
+        .status-alert { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: block; margin-top: 5px; text-align: center; }
+        .alert-7 { background: #fef3c7; color: #92400e; }
+        .alert-15 { background: #ffedd5; color: #9a3412; }
+        .alert-30 { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; padding: 15px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; }
+
         .hidden { display: none !important; }
-        .btn-delete-row { background: #fee2e2; color: #ef4444; padding: 5px 8px; font-size: 12px; }
-        .btn-delete-row:hover { background: #ef4444; color: white; }
+        .admin-panel { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2 id="auth-title" style="margin-bottom: 20px;">Acesso Restrito</h2>
+        <h2 id="auth-title">Acesso Evilasio</h2>
         <input type="text" id="user-name" class="hidden" placeholder="Nome Completo">
-        <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp (Ex: 5527999998888)">
+        <input type="tel" id="user-phone" class="hidden" placeholder="WhatsApp (55...)">
         <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Senha">
-        <button class="btn-main" id="btn-auth" style="width:100%" onclick="handleAuth()">Entrar</button>
-        <button class="btn-outline" id="btn-switch" style="width:100%; margin-top:10px" onclick="toggleAuthMode()">Criar conta</button>
-        <p id="login-error" style="color:var(--danger); font-size: 12px; margin-top:15px"></p>
+        <button class="btn-main" style="width:100%" onclick="handleAuth()">Entrar</button>
+        <button class="btn-outline" style="width:100%; margin-top:10px" onclick="toggleAuthMode()">Criar conta</button>
+        <p id="login-error" style="color:var(--danger)"></p>
     </div>
 </div>
 
@@ -128,27 +63,45 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1 style="margin:0; font-size: 24px; color: var(--primary)">Evilasio Telefonia</h1>
-                <span class="user-info">👤 <span id="display-name">Carregando...</span></span>
+                <h1 style="margin:0; color: var(--primary)">Evilasio Telefonia</h1>
+                <span>👤 <span id="display-name">...</span></span>
             </div>
-            <button onclick="logout()" class="btn-outline" style="border-color: var(--danger); color: var(--danger)">Sair</button>
+            <div>
+                <button id="btn-admin-view" class="btn-outline hidden" onclick="toggleAdminPanel()">👥 Usuários</button>
+                <button onclick="logout()" class="btn-outline" style="border-color: var(--danger); color: var(--danger)">Sair</button>
+            </div>
         </div>
 
-        <input type="text" id="searchInput" class="search-box" placeholder="🔎 O que você está procurando hoje?" onkeyup="filterTable()">
+        <div id="admin-panel" class="admin-panel hidden">
+            <h3>Gerenciamento de Usuários e Logins</h3>
+            <table style="font-size: 12px;">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Último Login</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
 
-        <div class="actions-bar">
+        <input type="text" id="searchInput" style="padding:15px; font-size:16px" placeholder="🔎 Pesquisar peça ou fornecedor..." onkeyup="filterTable()">
+
+        <div style="margin: 20px 0; display:flex; gap:10px">
             <button class="btn-add" onclick="toggleForm()">➕ Nova Peça</button>
-            <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Planilha</button>
-            <button id="btn-limpar-tudo" class="btn-danger hidden" onclick="limparBancoDados()">🔥 Limpar Tudo</button>
-            <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls, .csv" onchange="importExcel(event)">
+            <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
+            <button class="btn-outline" onclick="document.getElementById('importFile').click()">📥 Importar</button>
         </div>
 
-        <div id="add-form" class="hidden" style="background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: end;">
-                <div><label style="font-size:12px">Data</label><input type="date" id="new-data"></div>
-                <div><label style="font-size:12px">Modelo</label><input type="text" id="new-modelo" placeholder="Ex: Moto G34"></div>
-                <div><label style="font-size:12px">Custo (R$)</label><input type="number" id="new-custo" placeholder="0.00"></div>
-                <button onclick="savePiece()" class="btn-add" style="height: 45px;">Salvar Peça</button>
+        <div id="add-form" class="hidden" style="background:#f1f5f9; padding:20px; border-radius:10px; margin-bottom:20px">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                <input type="date" id="new-data">
+                <input type="text" id="new-modelo" placeholder="Modelo">
+                <input type="text" id="new-fornecedor" placeholder="Fornecedor">
+                <input type="number" id="new-custo" placeholder="Custo R$">
+                <button onclick="savePiece()" class="btn-add">Salvar</button>
             </div>
         </div>
 
@@ -156,10 +109,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th width="15%">Data</th>
-                        <th width="35%">Modelo da Peça</th>
-                        <th width="15%">Custo</th>
-                        <th width="35%">Sugestão de Venda</th>
+                        <th>Data</th>
+                        <th>Modelo</th>
+                        <th>Fornecedor</th>
+                        <th>Custo</th>
+                        <th>Sugestão Venda</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -168,27 +122,8 @@
     </div>
 </div>
 
-<div id="cotacao-modal" class="hidden">
-    <div class="modal-content">
-        <h3 style="margin:0 0 20px 0; color: var(--primary)">📝 Gerar Cotação</h3>
-        <input type="text" id="cot-peca" placeholder="Peça (Ex: Tela Frontal)*">
-        <input type="text" id="cot-marca" placeholder="Marca (Ex: Motorola)*">
-        <input type="text" id="cot-modelo" readonly style="background:#f1f5f9; color: #64748b" placeholder="Modelo">
-        <input type="text" id="cot-ref" placeholder="Referência (Opcional)">
-        <input type="text" id="cot-cor" placeholder="Cor (Opcional)">
-        <input type="text" id="cot-cliente" placeholder="Nome do Cliente*">
-        
-        <div style="display:flex; gap:12px; margin-top:20px;">
-            <button onclick="gerarMensagemFinal()" style="background: var(--whatsapp); color:white; flex:2; padding:12px;">Enviar WhatsApp</button>
-            <button onclick="fecharModal()" style="background: #e2e8f0; color: var(--dark); flex:1; padding:12px;">Fechar</button>
-        </div>
-    </div>
-</div>
-
-<footer>&copy; 2026 Evilasio Telefonia | Desenvolvido por Fabio Oliveira</footer>
-
 <script>
-   const firebaseConfig = {
+    const firebaseConfig = {
         apiKey: "AIzaSyB3pXWX8z0d2B4Ydaz8V4BfkUOwTTB3a6s",
         authDomain: "consulta-pecas-88bef.firebaseapp.com",
         projectId: "consulta-pecas-88bef",
@@ -200,225 +135,166 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
-    let isLoginMode = true;
-    let userPhone = ""; 
     const ADM_EMAIL = "tvfmrp@gmail.com";
+    let isLoginMode = true;
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "Acesso Restrito" : "Criar Nova Conta";
         document.getElementById('user-name').classList.toggle('hidden', isLoginMode);
         document.getElementById('user-phone').classList.toggle('hidden', isLoginMode);
-        document.getElementById('btn-auth').innerText = isLoginMode ? "Entrar" : "Registrar Agora";
-        document.getElementById('btn-switch').innerText = isLoginMode ? "Não tem conta? Registre-se" : "Já tenho conta";
     }
 
     function handleAuth() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
-        const errorDiv = document.getElementById('login-error');
-
+        
         if (isLoginMode) {
-            auth.signInWithEmailAndPassword(email, pass).catch(e => errorDiv.innerText = "Erro: " + e.message);
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(u => registrarLogin(u.user.uid))
+                .catch(e => alert(e.message));
         } else {
             const name = document.getElementById('user-name').value;
             const phone = document.getElementById('user-phone').value;
-            if(!name || !phone) return alert("Preencha nome e telefone!");
-            
-            auth.createUserWithEmailAndPassword(email, pass)
-                .then(userCred => {
-                    db.collection("usuarios").doc(userCred.user.uid).set({
-                        nome: name,
-                        telefone: phone,
-                        email: email,
-                        autorizado: (email === ADM_EMAIL) // ADM já nasce autorizado
-                    });
-                })
-                .catch(e => errorDiv.innerText = e.message);
+            auth.createUserWithEmailAndPassword(email, pass).then(u => {
+                db.collection("usuarios").doc(u.user.uid).set({
+                    nome: name, email, telefone: phone, autorizado: (email === ADM_EMAIL), lastLogin: new Date()
+                });
+            });
         }
     }
 
-    function logout() { auth.signOut().then(() => location.reload()); }
+    function registrarLogin(uid) {
+        db.collection("usuarios").doc(uid).update({ lastLogin: new Date() });
+    }
 
-    // MONITOR DE LOGIN CORRIGIDO
     auth.onAuthStateChanged(user => {
-        const appDiv = document.getElementById('app');
-        const loginDiv = document.getElementById('login-screen');
-        const display = document.getElementById('display-name');
-
         if (user) {
-            loginDiv.classList.add('hidden');
-            appDiv.classList.remove('hidden');
-            
-            // 1. Mostrar botão de Admin se for você
-            if(user.email === ADM_EMAIL) {
-                document.getElementById('btn-limpar-tudo').classList.remove('hidden');
-            }
-
-            // 2. Carregar dados do perfil (Sem travar o app)
-            db.collection("usuarios").doc(user.uid).get().then(doc => {
-                let isEditor = false;
-                if (doc.exists) {
-                    const data = doc.data();
-                    display.innerText = data.nome;
-                    userPhone = data.telefone;
-                    isEditor = data.autorizado;
-                } else {
-                    display.innerText = user.email.split('@')[0];
-                    if(user.email === ADM_EMAIL) isEditor = true;
-                }
-                // 3. Carregar as peças passando a permissão encontrada
-                loadData(isEditor);
-            }).catch(err => {
-                console.log("Erro ao ler perfil, carregando básico...", err);
-                display.innerText = user.email;
-                loadData(user.email === ADM_EMAIL);
-            });
-
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('display-name').innerText = user.email;
+            if(user.email === ADM_EMAIL) document.getElementById('btn-admin-view').classList.remove('hidden');
+            loadData();
         } else {
-            loginDiv.classList.remove('hidden');
-            appDiv.classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
         }
     });
 
-    function loadData(isAutorizado) {
-        db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
+    function logout() { auth.signOut(); }
+
+    function loadData() {
+        // Ordenação por data (timestamp descendente)
+        db.collection("pecas").orderBy("timestamp", "desc").onSnapshot(snap => {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
-            if (snap.empty) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px">Nenhum dado encontrado.</td></tr>';
-                return;
-            }
-
             snap.forEach(doc => {
                 const item = doc.data();
                 const id = doc.id;
-                const custo = parseFloat(item.custo) || 0;
-                const sug1 = (custo * 2.5).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
-                const sug2 = (custo * 3.0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
-                
-                // Regra: Pode excluir se for o e-mail ADM OU se tiver campo 'autorizado: true' no Firestore
-                const podeExcluir = (isAutorizado || auth.currentUser.email === ADM_EMAIL);
-                const btnExcluir = podeExcluir ? `<br><button onclick="excluirPeca('${id}')" class="btn-delete-row">Excluir 🗑️</button>` : '';
+                const dataPeca = item.timestamp ? item.timestamp.toDate() : new Date();
+                const hoje = new Date();
+                const diffDias = Math.floor((hoje - dataPeca) / (1000 * 60 * 60 * 24));
 
+                let statusHtml = '';
+                if (diffDias >= 30) {
+                    statusHtml = `<span class="status-alert alert-30">${diffDias} dias - Desatualizado<br>
+                    <button onclick="solicitarAtualizacao('${item.fornecedor}', '${item.modelo}')" style="font-size:9px; margin-top:3px">🔄 Pedir Atualização</button></span>`;
+                } else if (diffDias >= 15) {
+                    statusHtml = `<span class="status-alert alert-15">${diffDias} dias - Antigo</span>`;
+                } else if (diffDias >= 7) {
+                    statusHtml = `<span class="status-alert alert-7">${diffDias} dias - Atenção</span>`;
+                }
+
+                const custo = item.custo || 0;
                 tbody.innerHTML += `
                     <tr>
-                        <td style="color:#64748b">${item.data}</td>
-                        <td>
-                            <div style="font-weight:600">${item.modelo}</div>
-                            ${btnExcluir}
-                        </td>
-                        <td class="price">${custo.toLocaleString('pt-br', {style:'currency', currency:'BRL'})}</td>
-                        <td>
-                            <div class="sugestao">Venda: <strong>${sug1}</strong> a <strong>${sug2}</strong></div>
-                            <button onclick="abrirFormularioCotacao('${item.modelo}')" 
-                                    style="background:var(--whatsapp); color:white; padding:6px 12px; font-size:12px">
-                                💬 Cotação
-                            </button>
-                        </td>
+                        <td>${item.data}<br>${statusHtml}</td>
+                        <td style="font-weight:bold">${item.modelo}</td>
+                        <td>${item.fornecedor || '---'}</td>
+                        <td>R$ ${custo.toFixed(2)}</td>
+                        <td>R$ ${(custo * 2.5).toFixed(2)} - ${(custo * 3).toFixed(2)}</td>
                     </tr>`;
             });
-        }, error => {
-            alert("Erro de acesso ao banco. Verifique as 'Rules' no console do Firebase.");
         });
-    }
-
-    async function limparBancoDados() {
-        if (auth.currentUser.email !== ADM_EMAIL) {
-            alert("SOMENTE ADMINISTRADOR FABIO OLIVEIRA PODE ALTERAR BANCO DE DADOS");
-            return;
-        }
-        if (confirm("🚨 APAGAR TUDO? Esta ação não pode ser desfeita!")) {
-            const snap = await db.collection("pecas").get();
-            const batch = db.batch();
-            snap.docs.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-            alert("Banco limpo!");
-        }
-    }
-
-    function excluirPeca(id) {
-        if (confirm("Deseja excluir esta peça?")) {
-            db.collection("pecas").doc(id).delete().catch(e => {
-                alert("Erro: Somente usuários autorizados podem excluir.");
-            });
-        }
     }
 
     function savePiece() {
-        const dataInput = document.getElementById('new-data').value;
+        const dataVal = document.getElementById('new-data').value;
         const modelo = document.getElementById('new-modelo').value.toUpperCase();
+        const fornecedor = document.getElementById('new-fornecedor').value.toUpperCase();
         const custo = parseFloat(document.getElementById('new-custo').value);
-        if(!dataInput || !modelo || isNaN(custo)) return alert("Preencha todos os campos!");
-        
-        const dataBR = dataInput.split('-').reverse().join('/');
-        db.collection("pecas").add({ data: dataBR, modelo, custo }).then(() => {
+
+        if(!dataVal || !modelo || !fornecedor) return alert("Preencha tudo!");
+
+        db.collection("pecas").add({
+            data: dataVal.split('-').reverse().join('/'),
+            timestamp: new Date(dataVal + "T12:00:00"), // Para ordenação correta
+            modelo, fornecedor, custo
+        }).then(() => {
             toggleForm();
             document.getElementById('new-modelo').value = '';
-            document.getElementById('new-custo').value = '';
+            document.getElementById('new-fornecedor').value = '';
         });
     }
 
-    function converterDataExcel(valor) {
-        if (typeof valor === "number") {
-            const dataJS = new Date(Math.round((valor - 25569) * 86400 * 1000));
-            return dataJS.toLocaleDateString('pt-BR');
-        }
-        return String(valor);
+    function solicitarAtualizacao(fornecedor, modelo) {
+        const msg = encodeURIComponent(`Olá, gostaria de uma atualização de preço para a peça: ${modelo}. No sistema consta registro de mais de 30 dias.`);
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
     }
 
-    function importExcel(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-            let count = 0;
-            jsonData.slice(1).forEach(row => {
-                if (row[0] && row[1]) {
-                    db.collection("pecas").add({
-                        data: converterDataExcel(row[0]),
-                        modelo: String(row[1]).toUpperCase(),
-                        custo: parseFloat(row[2]) || 0
-                    });
-                    count++;
-                }
+    function toggleAdminPanel() {
+        const panel = document.getElementById('admin-panel');
+        panel.classList.toggle('hidden');
+        if(!panel.classList.contains('hidden')) {
+            db.collection("usuarios").get().then(snap => {
+                const utbody = document.getElementById('userTableBody');
+                utbody.innerHTML = '';
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    const loginDate = u.lastLogin ? u.lastLogin.toDate().toLocaleString() : 'Nunca';
+                    utbody.innerHTML += `<tr>
+                        <td>${u.nome}</td>
+                        <td>${u.email}</td>
+                        <td>${loginDate}</td>
+                        <td><button onclick="alternarAutorizacao('${doc.id}', ${u.autorizado})">${u.autorizado ? 'Revogar' : 'Autorizar'}</button></td>
+                    </tr>`;
+                });
             });
-            alert(count + " Itens importados!");
-        };
-        reader.readAsArrayBuffer(file);
+        }
+    }
+
+    function alternarAutorizacao(id, status) {
+        db.collection("usuarios").doc(id).update({ autorizado: !status });
+        alert("Status alterado!");
+        toggleAdminPanel();
     }
 
     function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
     
     function filterTable() {
         const val = document.getElementById('searchInput').value.toUpperCase();
-        const rows = document.getElementById('tableBody').getElementsByTagName('tr');
-        for (let r of rows) {
-            r.style.display = r.innerText.toUpperCase().includes(val) ? "" : "none";
-        }
+        const rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach(r => r.style.display = r.innerText.toUpperCase().includes(val) ? "" : "none");
     }
 
-    function abrirFormularioCotacao(modelo) {
-        document.getElementById('cot-modelo').value = modelo;
-        document.getElementById('cotacao-modal').classList.remove('hidden');
-    }
-
-    function fecharModal() { document.getElementById('cotacao-modal').classList.add('hidden'); }
-
-    function gerarMensagemFinal() {
-        const peca = document.getElementById('cot-peca').value;
-        const cliente = document.getElementById('cot-cliente').value;
-        if(!peca || !cliente) return alert("Preencha os campos obrigatórios!");
-
-        const msg = `Cotação de ${peca}\nModelo: ${document.getElementById('cot-modelo').value}\nCliente: ${cliente}\n\n*Favor cotar somente se tiver em estoque.*`;
-        const url = `https://web.whatsapp.com/send?phone=${userPhone.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`;
-        window.open(url, '_blank');
-        fecharModal();
+    function importExcel(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            sheet.forEach(row => {
+                db.collection("pecas").add({
+                    data: row.Data || new Date().toLocaleDateString(),
+                    timestamp: new Date(),
+                    modelo: String(row.Modelo || '').toUpperCase(),
+                    fornecedor: String(row.Fornecedor || 'IMPORTADO').toUpperCase(),
+                    custo: parseFloat(row.Custo) || 0
+                });
+            });
+            alert("Importação concluída!");
+        };
+        reader.readAsArrayBuffer(file);
     }
 </script>
 </body>
