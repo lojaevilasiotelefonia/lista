@@ -14,7 +14,6 @@
         :root { 
             --primary: #1e3a8a; --accent: #3b82f6; --success: #10b981; 
             --danger: #ef4444; --warning: #f59e0b; --dark: #0f172a; --light: #f8fafc;
-            --whatsapp: #22c55e;
         }
 
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding-bottom: 80px; color: var(--dark); }
@@ -35,8 +34,8 @@
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
         .search-box { font-size: 16px; border: 2px solid var(--accent); margin-bottom: 20px; }
 
-        /* CARD OTIMIZADO */
-        .peca-card { background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .peca-card { background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: 0.3s; }
+        .peca-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .card-label { color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
         .modelo-title { font-size: 20px; color: var(--primary); margin: 5px 0 15px 0; display: block; font-weight: 800; line-height: 1.2; }
         
@@ -97,7 +96,7 @@
             <input type="text" id="searchInput" class="search-box" placeholder="🔎 Digite o modelo da peça..." onkeyup="filterCards()">
             
             <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                <button class="btn-main" style="background:var(--success); flex: 1;" onclick="toggleForm()">+ Cadastrar Peça</button>
+                <button class="btn-main" style="background:var(--success); flex: 1;" onclick="toggleForm()">+ Cadastrar</button>
                 <button class="btn-main" style="background:#8b5cf6; flex: 1;" onclick="document.getElementById('importFile').click()">📥 Importar Excel</button>
                 <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
             </div>
@@ -114,7 +113,7 @@
                 </div>
             </div>
 
-            <div id="cardsContainer"></div>
+            <div id="cardsContainer">Carregando estoque...</div>
         </div>
 
         <div id="content-usuarios" class="tab-content hidden">
@@ -125,7 +124,7 @@
         </div>
 
         <div id="content-historico" class="tab-content hidden">
-            <h3>Acessos</h3>
+            <h3>Acessos Recentes</h3>
             <table style="background: white; border-radius: 8px;">
                 <tbody id="historyTableBody"></tbody>
             </table>
@@ -150,6 +149,7 @@
     const db = firebase.firestore();
     const ADM_EMAIL = "tvfmrp@gmail.com";
 
+    // --- AUTENTICAÇÃO ---
     function toggleAuthMode() {
         const isLogin = document.getElementById('user-name').classList.contains('hidden');
         document.getElementById('auth-title').innerText = isLogin ? "Nova Conta" : "Evilasio Telefonia";
@@ -159,20 +159,20 @@
     }
 
     function handleAuth() {
-        const email = document.getElementById('email').value;
+        const email = document.getElementById('email').value.trim();
         const pass = document.getElementById('password').value;
         const isLogin = document.getElementById('user-name').classList.contains('hidden');
 
         if (isLogin) {
-            auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
+            auth.signInWithEmailAndPassword(email, pass).catch(e => alert("Erro: " + e.message));
         } else {
             const name = document.getElementById('user-name').value;
             const phone = document.getElementById('user-phone').value;
             auth.createUserWithEmailAndPassword(email, pass).then(u => {
                 db.collection("usuarios").doc(u.user.uid).set({
-                    nome: name, telefone: phone, email: email, autorizado: (email === ADM_EMAIL)
+                    nome: name, telefone: phone, email: email, autorizado: (email.toLowerCase() === ADM_EMAIL.toLowerCase())
                 });
-                alert("Cadastro feito! Aguarde aprovação.");
+                alert("Cadastro feito! Peça ao ADM para autorizar seu acesso.");
             }).catch(e => alert(e.message));
         }
     }
@@ -186,7 +186,7 @@
                 const isAdm = user.email.toLowerCase() === ADM_EMAIL.toLowerCase();
 
                 if(!userData?.autorizado && !isAdm) {
-                    alert("Aguarde autorização do ADM.");
+                    alert("Acesso pendente. Fale com o administrador.");
                     auth.signOut();
                     return;
                 }
@@ -207,26 +207,25 @@
         }
     });
 
-    async function limparBancoDados() {
-        if(auth.currentUser.email !== ADM_EMAIL) return;
-        const senha = prompt("Digite 'APAGAR' para deletar tudo:");
-        if (senha === "APAGAR") {
-            const snap = await db.collection("pecas").get();
-            const batch = db.batch();
-            snap.docs.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-            alert("Estoque limpo!");
-        }
-    }
-
+    // --- GESTÃO DE DADOS ---
     function loadData() {
-        db.collection("pecas").orderBy("data", "desc").onSnapshot(snap => {
+        // Ordenamos por 'createdAt' para que itens novos apareçam primeiro, independente da 'data' escrita
+        db.collection("pecas").orderBy("createdAt", "desc").onSnapshot(snap => {
             const container = document.getElementById('cardsContainer');
+            if (snap.empty) {
+                container.innerHTML = "<p style='text-align:center; padding:20px;'>Nenhum item no estoque.</p>";
+                return;
+            }
+            
             container.innerHTML = '';
             snap.forEach(doc => {
                 const item = doc.data();
-                const dias = Math.floor((new Date() - new Date(item.data.split('/').reverse().join('-'))) / 86400000);
-                const badge = dias >= 30 ? 'bg-30d' : (dias >= 15 ? 'bg-15d' : 'bg-7d');
+                // Cálculo de dias para o alerta de preço
+                const dataSplit = item.data.split('/');
+                const dataFormatada = dataSplit.length === 3 ? `${dataSplit[2]}-${dataSplit[1]}-${dataSplit[0]}` : item.data;
+                const dias = Math.floor((new Date() - new Date(dataFormatada)) / 86400000) || 0;
+                
+                const badgeClass = dias >= 30 ? 'bg-30d' : (dias >= 15 ? 'bg-15d' : 'bg-7d');
                 const custo = parseFloat(item.custo) || 0;
                 
                 container.innerHTML += `
@@ -241,28 +240,80 @@
                             </div>
                             <div style="text-align:right">
                                 <span class="card-label">Sugestão de Venda</span>
-                                <span class="price-val" style="color:var(--success)">R$ ${(custo*2.5).toFixed(2)} a ${(custo*3).toFixed(2)}</span>
+                                <span class="price-val" style="color:var(--success)">R$ ${(custo*2.5).toFixed(2)} - R$ ${(custo*3).toFixed(2)}</span>
                             </div>
                         </div>
 
                         ${dias > 15 ? `<div class="alert-box">⚠️ Preço registrado há ${dias} dias. Pode estar desatualizado!</div>` : ''}
 
                         <div class="card-footer">
-                            <span class="date-info">Entrada: ${item.data} <span class="badge ${badge}">${dias} dias atrás</span></span>
+                            <span class="date-info">Entrada: ${item.data} <span class="badge ${badgeClass}">${dias} dias atrás</span></span>
                             <button onclick="deletePiece('${doc.id}')" style="background:none; color:var(--danger); font-size:11px; text-decoration:underline">Excluir</button>
                         </div>
                     </div>`;
             });
+        }, err => {
+            console.error("Erro Firestore:", err);
+            if(err.message.includes("index")) {
+                document.getElementById('cardsContainer').innerHTML = "<p style='color:red'>Erro: Você precisa criar um Índice no Console do Firebase para ordenar os dados.</p>";
+            }
         });
+    }
+
+    async function importExcel(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            try {
+                const data = new Uint8Array(evt.target.result);
+                const wb = XLSX.read(data, {type:'array'});
+                const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
+                
+                const batch = db.batch();
+                let count = 0;
+
+                // Começa do 1 para pular o cabeçalho
+                rows.slice(1).forEach(row => {
+                    if(row[1]) { // Se houver modelo
+                        const docRef = db.collection("pecas").doc();
+                        batch.set(docRef, {
+                            data: row[0] || new Date().toLocaleDateString('pt-BR'),
+                            modelo: String(row[1]).toUpperCase().trim(),
+                            custo: parseFloat(String(row[2]).replace('R$', '').replace(',', '.')) || 0,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        count++;
+                    }
+                });
+
+                if(count > 0) {
+                    await batch.commit();
+                    alert(count + " itens importados com sucesso!");
+                } else {
+                    alert("Nenhum dado válido encontrado na planilha.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao processar Excel. Verifique as colunas.");
+            }
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     function savePiece() {
         const d = document.getElementById('new-data').value;
-        const m = document.getElementById('new-modelo').value.toUpperCase();
+        const m = document.getElementById('new-modelo').value.toUpperCase().trim();
         const c = document.getElementById('new-custo').value;
+        
         if(!d || !m || !c) return alert("Preencha todos os campos!");
+
         db.collection("pecas").add({
-            data: d.split('-').reverse().join('/'), modelo: m, custo: parseFloat(c)
+            data: d.split('-').reverse().join('/'),
+            modelo: m,
+            custo: parseFloat(c),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             toggleForm();
             document.getElementById('new-modelo').value = "";
@@ -270,25 +321,42 @@
         });
     }
 
-    function importExcel(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            const data = new Uint8Array(evt.target.result);
-            const wb = XLSX.read(data, {type:'array'});
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-            rows.slice(1).forEach(row => {
-                if(row[1]) {
-                    db.collection("pecas").add({
-                        data: row[0] || new Date().toLocaleDateString('pt-BR'),
-                        modelo: String(row[1]).toUpperCase(),
-                        custo: parseFloat(String(row[2]).replace('R$', '').replace(',', '.')) || 0
-                    });
-                }
-            });
-            alert("Planilha importada com sucesso!");
-        };
-        reader.readAsArrayBuffer(file);
+    // --- UTILITÁRIOS ---
+    async function limparBancoDados() {
+        if(auth.currentUser.email !== ADM_EMAIL) return;
+        if (confirm("ISSO APAGARÁ TODO O ESTOQUE. Tem certeza?")) {
+            const senha = prompt("Digite 'APAGAR' para confirmar:");
+            if (senha === "APAGAR") {
+                const snap = await db.collection("pecas").get();
+                const batch = db.batch();
+                snap.docs.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                alert("Estoque limpo!");
+            }
+        }
+    }
+
+    function deletePiece(id) {
+        if(confirm("Deseja apagar esta peça?")) {
+            db.collection("pecas").doc(id).delete();
+        }
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('content-'+t).classList.remove('hidden');
+        event.currentTarget.classList.add('active');
+    }
+
+    function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
+
+    function filterCards() {
+        const v = document.getElementById('searchInput').value.toUpperCase();
+        const cards = document.getElementsByClassName('peca-card');
+        for (let c of cards) {
+            c.style.display = c.innerText.toUpperCase().includes(v) ? "" : "none";
+        }
     }
 
     function loadUsers() {
@@ -311,21 +379,6 @@
                 tb.innerHTML += `<tr><td>${h.data}</td><td>${h.usuario}</td></tr>`;
             });
         });
-    }
-
-    function switchTab(t) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('content-'+t).classList.remove('hidden');
-        event.currentTarget.classList.add('active');
-    }
-
-    function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
-    function deletePiece(id) { if(confirm("Deseja apagar esta peça?")) db.collection("pecas").doc(id).delete(); }
-    function filterCards() {
-        const v = document.getElementById('searchInput').value.toUpperCase();
-        const cards = document.getElementsByClassName('peca-card');
-        for (let c of cards) c.style.display = c.innerText.toUpperCase().includes(v) ? "" : "none";
     }
 </script>
 </body>
