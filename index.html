@@ -114,7 +114,7 @@
 
 <footer>
     <div>Desenvolvido por: <b>Fabio Oliveira e IA</b></div>
-    <div>Criação: 2024 | Atual: <span id="ft-year"></span></div>
+    <div> <span id="ft-year"></span></div>
     <div><span id="ft-date"></span> às <span id="ft-time"></span></div>
 </footer>
 
@@ -237,15 +237,28 @@
         const reader = new FileReader();
         reader.onload = async (evt) => {
             const bstr = evt.target.result;
-            const wb = XLSX.read(bstr, {type:'binary'});
+            const wb = XLSX.read(bstr, {type:'binary', cellDates: true}); // Adicionado cellDates
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
             const batch = db.batch();
 
             rows.slice(1).forEach(row => {
                 if(row[1]) {
+                    let dataFormatada;
+                    
+                    // Lógica para converter data do Excel (número) para texto PT-BR
+                    if (row[0] instanceof Date) {
+                        dataFormatada = row[0].toLocaleDateString('pt-BR');
+                    } else if (!isNaN(row[0]) && row[0] > 0) {
+                        // Caso venha como número serial do Excel
+                        const dataExcel = new Date((row[0] - 25569) * 86400 * 1000);
+                        dataFormatada = dataExcel.toLocaleDateString('pt-BR');
+                    } else {
+                        dataFormatada = row[0] || new Date().toLocaleDateString('pt-BR');
+                    }
+
                     const ref = db.collection("pecas").doc();
                     batch.set(ref, {
-                        data: row[0] || new Date().toLocaleDateString('pt-BR'),
+                        data: dataFormatada,
                         modelo: String(row[1]).toUpperCase(),
                         custo: parseFloat(String(row[2]).replace(',','.')) || 0,
                         fornecedor: String(row[3] || "IMPORTADO").toUpperCase(),
@@ -254,7 +267,7 @@
                 }
             });
             await batch.commit();
-            alert("Importação Concluída!");
+            alert("Importação Concluída com sucesso!");
             switchTab('estoque', document.querySelector('.tab-link'));
         };
         reader.readAsBinaryString(file);
