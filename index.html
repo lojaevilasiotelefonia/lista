@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evilasio Telefonia - Gestão Profissional</title>
+    <title>Evilasio Telefonia - Gestão Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -18,22 +18,22 @@
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding-bottom: 80px; color: var(--dark); }
         .hidden { display: none !important; }
         #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-box { background: white; padding: 35px; border-radius: 16px; width: 350px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-        .container { max-width: 900px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; overflow-x: auto; }
-        .tab-btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; border: none; background: #e2e8f0; font-weight: bold; white-space: nowrap; }
-        .tab-btn.active { background: var(--primary); color: white; }
+        .login-box { background: white; padding: 35px; border-radius: 16px; width: 320px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+        .container { max-width: 600px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
-        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; padding: 12px 18px; }
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; padding: 12px 18px; transition: 0.3s; }
         .btn-main { background: var(--primary); color: white; }
         .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
         .search-box { font-size: 16px; border: 2px solid var(--accent); margin-bottom: 20px; width: 100%; padding: 12px; border-radius: 8px; }
-        .peca-card { background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
-        .modelo-title { font-size: 20px; color: var(--primary); font-weight: 800; display: block; margin-bottom: 10px; }
+        .peca-card { background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; margin-bottom: 15px; position: relative; }
+        .modelo-title { font-size: 18px; color: var(--primary); font-weight: 800; display: block; margin-bottom: 10px; }
         .price-container { background: #f8fafc; padding: 15px; border-radius: 10px; }
-        .alert-box { background: #fff1f2; color: #e11d48; padding: 10px; border-radius: 8px; font-size: 12px; margin-top: 10px; text-align: center; font-weight: bold; }
+        .edit-input { width: 80px !important; padding: 4px !important; margin: 0 !important; font-size: 16px !important; font-weight: bold; }
+        .alert-box { background: #fff1f2; color: #e11d48; padding: 8px; border-radius: 8px; font-size: 11px; margin-top: 10px; text-align: center; font-weight: bold; }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; color: white; }
         .bg-7d { background: var(--success); } .bg-15d { background: var(--warning); } .bg-30d { background: var(--danger); }
+        .action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -45,49 +45,40 @@
         <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Senha">
         <button class="btn-main" style="width:100%" onclick="handleAuth()" id="btn-auth">Entrar</button>
-        <p onclick="toggleAuthMode()" style="color:var(--accent); cursor:pointer; font-size:13px; margin-top:10px;">Criar conta</p>
+        <p onclick="toggleAuthMode()" style="color:var(--accent); cursor:pointer; font-size:13px; margin-top:10px;">Criar nova conta</p>
     </div>
 </div>
 
 <div id="app" class="hidden">
     <div class="container">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--primary)">Estoque</h2>
+            <h2 style="color: var(--primary); margin:0;">Estoque</h2>
             <button onclick="logout()" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">Sair</button>
         </div>
 
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('estoque')">📦 Estoque</button>
-            <button id="tab-users" class="tab-btn hidden" onclick="switchTab('usuarios')">👥 Usuários</button>
+        <input type="text" id="searchInput" class="search-box" placeholder="🔎 Pesquisar modelo..." onkeyup="filterCards()">
+        
+        <div class="action-bar">
+            <button class="btn-main" onclick="toggleForm()" style="background:var(--success)">+ Novo Item</button>
+            <button class="btn-main" onclick="document.getElementById('importFile').click()" style="background:#8b5cf6">📥 Importar Excel</button>
+            <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
         </div>
 
-        <div id="content-estoque">
-            <input type="text" id="searchInput" class="search-box" placeholder="🔎 Pesquisar modelo..." onkeyup="filterCards()">
-            
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="btn-main" onclick="toggleForm()" style="background:var(--success); flex:1">+ Novo</button>
-                <button class="btn-main" onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; flex:1">📥 Importar Excel</button>
-                <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
-            </div>
+        <button class="btn-danger" onclick="clearAllData()" style="width:100%; margin-bottom: 20px; font-size: 12px; opacity: 0.8;">⚠️ Limpar Todo o Estoque</button>
 
-            <div id="add-form" class="hidden" style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:15px;">
-                <input type="date" id="new-data">
-                <input type="text" id="new-modelo" placeholder="Modelo">
-                <input type="number" id="new-custo" placeholder="Custo R$">
-                <button class="btn-main" onclick="savePiece()" style="width:100%">Salvar</button>
-            </div>
-
-            <div id="cardsContainer">Carregando itens...</div>
+        <div id="add-form" class="hidden" style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:15px;">
+            <input type="date" id="new-data">
+            <input type="text" id="new-modelo" placeholder="Modelo (ex: GALAXY A10)">
+            <input type="number" id="new-custo" placeholder="Custo R$">
+            <button class="btn-main" onclick="savePiece()" style="width:100%">Salvar no Banco</button>
         </div>
 
-        <div id="content-usuarios" class="tab-content hidden">
-            <h3>Gerenciar Usuários</h3>
-            <div id="userList"></div>
-        </div>
+        <div id="cardsContainer">Carregando estoque...</div>
     </div>
 </div>
 
 <script>
+    // Configurações do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyB3pXWX8z0d2B4Ydaz8V4BfkUOwTTB3a6s",
         authDomain: "consulta-pecas-88bef.firebaseapp.com",
@@ -100,12 +91,10 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const ADM_EMAIL = "tvfmrp@gmail.com";
 
-    // --- TRATAMENTO DE DATA (Excel e Manual) ---
+    // --- UTILITÁRIOS DE DATA ---
     function formatarDataParaExibir(valor) {
         if (!valor) return "S/D";
-        // Se for serial do Excel (ex: 44595)
         if (!isNaN(valor) && parseFloat(valor) > 30000) {
             const dataExcel = new Date((valor - 25569) * 86400 * 1000);
             return dataExcel.toLocaleDateString('pt-BR');
@@ -124,8 +113,9 @@
 
     // --- AUTENTICAÇÃO ---
     function toggleAuthMode() {
-        document.getElementById('user-name').classList.toggle('hidden');
-        document.getElementById('btn-auth').innerText = document.getElementById('user-name').classList.contains('hidden') ? "Entrar" : "Criar Conta";
+        const nameField = document.getElementById('user-name');
+        nameField.classList.toggle('hidden');
+        document.getElementById('btn-auth').innerText = nameField.classList.contains('hidden') ? "Entrar" : "Cadastrar";
     }
 
     function handleAuth() {
@@ -135,110 +125,106 @@
         const isLogin = document.getElementById('user-name').classList.contains('hidden');
 
         if (isLogin) {
-            auth.signInWithEmailAndPassword(email, pass).catch(e => alert("Erro: " + e.message));
+            auth.signInWithEmailAndPassword(email, pass).catch(e => alert("Erro ao entrar: " + e.message));
         } else {
             auth.createUserWithEmailAndPassword(email, pass).then(u => {
                 db.collection("usuarios").doc(u.user.uid).set({
-                    nome: name, email: email, autorizado: (email.toLowerCase() === ADM_EMAIL)
+                    nome: name, email: email, autorizado: true // APROVAÇÃO AUTOMÁTICA
                 });
-                alert("Conta criada! Aguarde o ADM liberar.");
             }).catch(e => alert(e.message));
         }
     }
 
     auth.onAuthStateChanged(user => {
         if (user) {
-            db.collection("usuarios").doc(user.uid).get().then(doc => {
-                if (!doc.exists && user.email !== ADM_EMAIL) { auth.signOut(); return; }
-                const data = doc.data();
-                if (data?.autorizado || user.email === ADM_EMAIL) {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('app').classList.remove('hidden');
-                    if (user.email === ADM_EMAIL) document.getElementById('tab-users').classList.remove('hidden');
-                    loadData();
-                } else {
-                    alert("Aguarde autorização do administrador."); auth.signOut();
-                }
-            });
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            loadData();
+        } else {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
         }
     });
 
-    // --- CARREGAR DADOS ---
+    // --- LÓGICA DE DADOS ---
     function loadData() {
         db.collection("pecas").orderBy("createdAt", "desc").onSnapshot(snap => {
             const container = document.getElementById('cardsContainer');
-            container.innerHTML = snap.empty ? "Nenhum item no estoque." : "";
+            container.innerHTML = snap.empty ? "<center>Estoque vazio.</center>" : "";
             
             snap.forEach(doc => {
                 const item = doc.data();
                 const dataFormatada = formatarDataParaExibir(item.data);
                 const dataObj = dataParaObjeto(dataFormatada);
-                
-                const hoje = new Date(); hoje.setHours(0,0,0,0);
-                const diff = hoje - dataObj;
-                const dias = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-                
+                const dias = Math.max(0, Math.floor((new Date().setHours(0,0,0,0) - dataObj) / 86400000));
                 const badge = dias >= 30 ? 'bg-30d' : (dias >= 15 ? 'bg-15d' : 'bg-7d');
                 const custo = parseFloat(item.custo) || 0;
 
                 container.innerHTML += `
                     <div class="peca-card">
-                        <span class="modelo-title">${item.modelo || 'SEM NOME'}</span>
-                        
+                        <span class="modelo-title">${item.modelo}</span>
                         <div class="price-container">
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
-                                <span style="font-size: 12px; font-weight: bold; color: #64748b;">CUSTO ATUAL</span>
-                                <b style="color: var(--danger); font-size: 18px;">R$ ${custo.toFixed(2)}</b>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
+                                <span style="font-size: 11px; font-weight: bold; color: #64748b;">CUSTO (clique p/ editar)</span>
+                                <div style="color: var(--danger); font-size: 18px; font-weight: bold;">
+                                    R$ <input type="number" step="0.01" class="edit-input" value="${custo.toFixed(2)}" 
+                                        onchange="updatePrice('${doc.id}', this.value)">
+                                </div>
                             </div>
-                            
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                 <div style="background: #ecfdf5; padding: 10px; border-radius: 8px; text-align: center;">
-                                    <small style="color: #059669; font-size: 10px; font-weight: bold;">VENDA (2.5x)</small><br>
-                                    <b style="color: #059669; font-size: 16px;">R$ ${(custo * 2.5).toFixed(2)}</b>
+                                    <small style="color: #059669; font-size: 9px; font-weight: bold;">VENDA (2.5x)</small><br>
+                                    <b style="color: #059669;">R$ ${(custo * 2.5).toFixed(2)}</b>
                                 </div>
                                 <div style="background: #f0f9ff; padding: 10px; border-radius: 8px; text-align: center;">
-                                    <small style="color: #0284c7; font-size: 10px; font-weight: bold;">VENDA (3x)</small><br>
-                                    <b style="color: #0284c7; font-size: 16px;">R$ ${(custo * 3).toFixed(2)}</b>
+                                    <small style="color: #0284c7; font-size: 9px; font-weight: bold;">VENDA (3x)</small><br>
+                                    <b style="color: #0284c7;">R$ ${(custo * 3).toFixed(2)}</b>
                                 </div>
                             </div>
                         </div>
-
-                        ${dias > 15 ? `<div class="alert-box">⚠️ Preço registrado há ${dias} dias. Pode estar desatualizado.</div>` : ''}
-                        
-                        <div style="margin-top:15px; font-size:12px; display:flex; justify-content:space-between; align-items: center;">
-                            <span style="color: #64748b;">📅 ${dataFormatada} <span class="badge ${badge}" style="margin-left:5px;">${dias}d</span></span>
-                            <button onclick="deletePiece('${doc.id}')" style="background:none; color:var(--danger); cursor:pointer; font-size: 11px; text-decoration: underline;">Excluir</button>
+                        ${dias > 15 ? `<div class="alert-box">⚠️ Preço desatualizado (${dias} dias)</div>` : ''}
+                        <div style="margin-top:15px; font-size:11px; display:flex; justify-content:space-between;">
+                            <span style="color: #64748b;">📅 ${dataFormatada} <span class="badge ${badge}">${dias}d</span></span>
+                            <button onclick="deletePiece('${doc.id}')" style="background:none; color:var(--danger); padding:0; text-decoration: underline;">Excluir</button>
                         </div>
                     </div>`;
             });
         });
     }
 
-    // --- FUNÇÕES DE ESTOQUE ---
+    async function updatePrice(id, newVal) {
+        const n = parseFloat(newVal);
+        if(isNaN(n)) return;
+        await db.collection("pecas").doc(id).update({ 
+            custo: n,
+            data: new Date().toLocaleDateString('pt-BR'), // Atualiza a data para hoje ao editar preço
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+        });
+    }
+
     async function importExcel(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = async (evt) => {
             const data = new Uint8Array(evt.target.result);
-            const wb = XLSX.read(data, {type:'array', cellDates: false});
+            const wb = XLSX.read(data, {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
             const batch = db.batch();
             
-            let count = 0;
             rows.slice(1).forEach(row => {
                 if (row[1]) {
+                    const rawCusto = String(row[2] || "0").replace('R$', '').replace('.', '').replace(',', '.').trim();
                     const docRef = db.collection("pecas").doc();
                     batch.set(docRef, {
-                        data: row[0],
+                        data: row[0] || new Date().toLocaleDateString('pt-BR'),
                         modelo: String(row[1]).toUpperCase(),
-                        custo: parseFloat(String(row[2]).replace('R$', '').replace(',', '.')) || 0,
+                        custo: parseFloat(rawCusto) || 0,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    count++;
                 }
             });
             await batch.commit();
-            alert(count + " peças importadas!");
+            alert("Importação concluída!");
         };
         reader.readAsArrayBuffer(file);
     }
@@ -250,7 +236,7 @@
         if(!m || !c) return alert("Preencha modelo e custo");
 
         db.collection("pecas").add({
-            data: d.split('-').reverse().join('/'),
+            data: d ? d.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR'),
             modelo: m.toUpperCase(),
             custo: parseFloat(c),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -261,20 +247,27 @@
         });
     }
 
-    function deletePiece(id) { if(confirm("Deseja apagar este item?")) db.collection("pecas").doc(id).delete(); }
+    async function clearAllData() {
+        if(confirm("ATENÇÃO: Isso apagará TODO o estoque permanentemente. Confirma?")) {
+            const snap = await db.collection("pecas").get();
+            const batch = db.batch();
+            snap.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            alert("Estoque limpo com sucesso!");
+        }
+    }
+
+    function deletePiece(id) { if(confirm("Apagar este item?")) db.collection("pecas").doc(id).delete(); }
     function logout() { auth.signOut().then(() => location.reload()); }
     function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
-    function switchTab(t) {
-        document.getElementById('content-estoque').classList.add('hidden');
-        document.getElementById('content-usuarios').classList.add('hidden');
-        document.getElementById('content-'+t).classList.remove('hidden');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-    }
+    
     function filterCards() {
         const v = document.getElementById('searchInput').value.toUpperCase();
         const cards = document.getElementsByClassName('peca-card');
-        for (let c of cards) c.style.display = c.innerText.toUpperCase().includes(v) ? "" : "none";
+        for (let c of cards) {
+            const title = c.querySelector('.modelo-title').innerText;
+            c.style.display = title.includes(v) ? "" : "none";
+        }
     }
 </script>
 </body>
