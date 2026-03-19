@@ -15,70 +15,110 @@
             --primary: #1e3a8a; --accent: #3b82f6; --success: #10b981; 
             --danger: #ef4444; --warning: #f59e0b; --dark: #0f172a; --light: #f8fafc;
         }
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding-bottom: 80px; color: var(--dark); }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding-bottom: 110px; color: var(--dark); }
         .hidden { display: none !important; }
+        
+        /* Telas */
         #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .login-box { background: white; padding: 35px; border-radius: 16px; width: 320px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
         .container { max-width: 600px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        
+        /* UI Elements */
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
-        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; padding: 12px 18px; transition: 0.3s; }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .search-box { font-size: 16px; border: 2px solid var(--accent); margin-bottom: 20px; width: 100%; padding: 12px; border-radius: 8px; }
-        .peca-card { background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; margin-bottom: 15px; position: relative; }
-        .modelo-title { font-size: 18px; color: var(--primary); font-weight: 800; display: block; margin-bottom: 10px; }
-        .price-container { background: #f8fafc; padding: 15px; border-radius: 10px; }
-        .edit-input { width: 80px !important; padding: 4px !important; margin: 0 !important; font-size: 16px !important; font-weight: bold; }
-        .alert-box { background: #fff1f2; color: #e11d48; padding: 8px; border-radius: 8px; font-size: 11px; margin-top: 10px; text-align: center; font-weight: bold; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; color: white; }
-        .bg-7d { background: var(--success); } .bg-15d { background: var(--warning); } .bg-30d { background: var(--danger); }
-        .action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; padding: 12px 18px; transition: 0.3s; margin: 5px 0; }
+        .btn-main { background: var(--primary); color: white; width: 100%; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; overflow-x: auto; }
+        .tab-link { cursor: pointer; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        .tab-active { background: var(--primary); color: white; }
+
+        /* Tabela Modelo */
+        .excel-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        .excel-table th, .excel-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+        .excel-table th { background: #f1f5f9; }
+
+        /* Rodapé */
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--dark); color: white; padding: 12px 0; font-size: 11px; text-align: center; z-index: 999; line-height: 1.4; }
+        
+        /* Peças */
+        .peca-card { background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 18px; margin-bottom: 15px; }
+        .modelo-title { font-size: 16px; color: var(--primary); font-weight: 800; text-transform: uppercase; }
+        .fornecedor-text { color: #64748b; font-size: 12px; margin-bottom: 10px; display: block; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2 id="auth-title">Evilasio Telefonia</h2>
+        <h2>Evilasio Telefonia</h2>
         <input type="text" id="user-name" class="hidden" placeholder="Nome Completo">
         <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Senha">
-        <button class="btn-main" style="width:100%" onclick="handleAuth()" id="btn-auth">Entrar</button>
+        <button class="btn-main" onclick="handleAuth()" id="btn-auth">Entrar</button>
         <p onclick="toggleAuthMode()" style="color:var(--accent); cursor:pointer; font-size:13px; margin-top:10px;">Criar nova conta</p>
     </div>
 </div>
 
 <div id="app" class="hidden">
     <div class="container">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--primary); margin:0;">Estoque</h2>
-            <button onclick="logout()" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">Sair</button>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+                <h3 id="welcome-user" style="margin:0; color:var(--primary)">Olá!</h3>
+            </div>
+            <button onclick="logout()" class="btn-outline" style="padding: 5px 12px; font-size: 11px;">Sair</button>
         </div>
 
-        <input type="text" id="searchInput" class="search-box" placeholder="🔎 Pesquisar modelo..." onkeyup="filterCards()">
-        
-        <div class="action-bar">
-            <button class="btn-main" onclick="toggleForm()" style="background:var(--success)">+ Novo Item</button>
-            <button class="btn-main" onclick="document.getElementById('importFile').click()" style="background:#8b5cf6">📥 Importar Excel</button>
+        <div class="nav-tabs">
+            <span class="tab-link tab-active" onclick="switchTab('estoque', this)">📦 Estoque</span>
+            <span class="tab-link" onclick="switchTab('importar', this)">📥 Importar Excel</span>
+            <span class="tab-link" onclick="switchTab('historico', this)">🕒 Logins</span>
+        </div>
+
+        <div id="tab-estoque" class="tab-content">
+            <input type="text" id="searchInput" placeholder="🔎 Pesquisar modelo ou fornecedor..." onkeyup="filterCards()" style="border: 2px solid var(--accent);">
+            <button class="btn-main" onclick="toggleForm()" style="background:var(--success)">+ Novo Item Manual</button>
+            
+            <div id="add-form" class="hidden" style="background:#f8fafc; padding:15px; border-radius:10px; border: 1px dashed var(--accent);">
+                <input type="text" id="new-modelo" placeholder="Modelo">
+                <input type="text" id="new-fornecedor" placeholder="Fornecedor">
+                <input type="number" id="new-custo" placeholder="Custo R$">
+                <button class="btn-main" onclick="savePiece()">Salvar</button>
+            </div>
+            <div id="cardsContainer" style="margin-top:20px;">Carregando...</div>
+        </div>
+
+        <div id="tab-importar" class="tab-content hidden">
+            <h4>Importação via Excel</h4>
+            <p style="font-size: 13px; color: #64748b;">Sua planilha deve seguir exatamente esta ordem de colunas:</p>
+            
+            <table class="excel-table">
+                <thead>
+                    <tr><th>Data (A)</th><th>Modelo (B)</th><th>Custo (C)</th><th>Fornecedor (D)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>01/01/2026</td><td>GALAXY A10</td><td>150.00</td><td>SAMSUNG OFICIAL</td></tr>
+                </tbody>
+            </table>
+
+            <button class="btn-outline" onclick="downloadTemplate()" style="margin-top:15px; width: 100%;">📄 Baixar Planilha Vazia</button>
+            <button class="btn-main" onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; margin-top:10px;">📤 Selecionar Arquivo e Importar</button>
             <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
         </div>
 
-        <button class="btn-danger" onclick="clearAllData()" style="width:100%; margin-bottom: 20px; font-size: 12px; opacity: 0.8;">⚠️ Limpar Todo o Estoque</button>
-
-        <div id="add-form" class="hidden" style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:15px;">
-            <input type="date" id="new-data">
-            <input type="text" id="new-modelo" placeholder="Modelo (ex: GALAXY A10)">
-            <input type="number" id="new-custo" placeholder="Custo R$">
-            <button class="btn-main" onclick="savePiece()" style="width:100%">Salvar no Banco</button>
+        <div id="tab-historico" class="tab-content hidden">
+            <h4>Histórico de Acessos</h4>
+            <div id="loginHistoryList" style="font-size: 13px;">Carregando logs...</div>
         </div>
-
-        <div id="cardsContainer">Carregando estoque...</div>
     </div>
 </div>
 
+<footer>
+    <div>Desenvolvido por: <b>Fabio Oliveira e IA</b></div>
+    <div>Criação: 2024 | Atual: <span id="ft-year"></span></div>
+    <div><span id="ft-date"></span> às <span id="ft-time"></span></div>
+</footer>
+
 <script>
-    // Configurações do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyB3pXWX8z0d2B4Ydaz8V4BfkUOwTTB3a6s",
         authDomain: "consulta-pecas-88bef.firebaseapp.com",
@@ -92,32 +132,25 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- UTILITÁRIOS DE DATA ---
-    function formatarDataParaExibir(valor) {
-        if (!valor) return "S/D";
-        if (!isNaN(valor) && parseFloat(valor) > 30000) {
-            const dataExcel = new Date((valor - 25569) * 86400 * 1000);
-            return dataExcel.toLocaleDateString('pt-BR');
-        }
-        let s = String(valor).trim();
-        if (s.includes('-')) return s.split('-').reverse().join('/');
-        return s;
+    // --- RELÓGIO ---
+    function updateClock() {
+        const d = new Date();
+        document.getElementById('ft-year').innerText = d.getFullYear();
+        document.getElementById('ft-date').innerText = d.toLocaleDateString('pt-BR');
+        document.getElementById('ft-time').innerText = d.toLocaleTimeString('pt-BR');
+    }
+    setInterval(updateClock, 1000);
+
+    // --- NAVEGAÇÃO ---
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('tab-active'));
+        document.getElementById('tab-' + tabId).classList.remove('hidden');
+        el.classList.add('tab-active');
+        if(tabId === 'historico') loadHistory();
     }
 
-    function dataParaObjeto(stringData) {
-        try {
-            const partes = stringData.split('/');
-            return partes.length === 3 ? new Date(partes[2], partes[1] - 1, partes[0]) : new Date();
-        } catch(e) { return new Date(); }
-    }
-
-    // --- AUTENTICAÇÃO ---
-    function toggleAuthMode() {
-        const nameField = document.getElementById('user-name');
-        nameField.classList.toggle('hidden');
-        document.getElementById('btn-auth').innerText = nameField.classList.contains('hidden') ? "Entrar" : "Cadastrar";
-    }
-
+    // --- AUTH ---
     function handleAuth() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
@@ -125,20 +158,27 @@
         const isLogin = document.getElementById('user-name').classList.contains('hidden');
 
         if (isLogin) {
-            auth.signInWithEmailAndPassword(email, pass).catch(e => alert("Erro ao entrar: " + e.message));
+            auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
         } else {
             auth.createUserWithEmailAndPassword(email, pass).then(u => {
-                db.collection("usuarios").doc(u.user.uid).set({
-                    nome: name, email: email, autorizado: true // APROVAÇÃO AUTOMÁTICA
-                });
+                db.collection("usuarios").doc(u.user.uid).set({ nome: name, email: email });
             }).catch(e => alert(e.message));
         }
     }
 
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async user => {
         if (user) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
+            const doc = await db.collection("usuarios").doc(user.uid).get();
+            document.getElementById('welcome-user').innerText = "Olá, " + (doc.data()?.nome || "Usuário");
+            
+            // Registra o login atual no histórico
+            db.collection("usuarios").doc(user.uid).collection("logins").add({
+                data: new Date().toLocaleString('pt-BR'),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
             loadData();
         } else {
             document.getElementById('login-screen').classList.remove('hidden');
@@ -146,128 +186,104 @@
         }
     });
 
-    // --- LÓGICA DE DADOS ---
+    // --- DADOS ---
     function loadData() {
         db.collection("pecas").orderBy("createdAt", "desc").onSnapshot(snap => {
             const container = document.getElementById('cardsContainer');
-            container.innerHTML = snap.empty ? "<center>Estoque vazio.</center>" : "";
-            
+            container.innerHTML = "";
             snap.forEach(doc => {
                 const item = doc.data();
-                const dataFormatada = formatarDataParaExibir(item.data);
-                const dataObj = dataParaObjeto(dataFormatada);
-                const dias = Math.max(0, Math.floor((new Date().setHours(0,0,0,0) - dataObj) / 86400000));
-                const badge = dias >= 30 ? 'bg-30d' : (dias >= 15 ? 'bg-15d' : 'bg-7d');
-                const custo = parseFloat(item.custo) || 0;
-
                 container.innerHTML += `
                     <div class="peca-card">
                         <span class="modelo-title">${item.modelo}</span>
-                        <div class="price-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
-                                <span style="font-size: 11px; font-weight: bold; color: #64748b;">CUSTO (clique p/ editar)</span>
-                                <div style="color: var(--danger); font-size: 18px; font-weight: bold;">
-                                    R$ <input type="number" step="0.01" class="edit-input" value="${custo.toFixed(2)}" 
-                                        onchange="updatePrice('${doc.id}', this.value)">
-                                </div>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <div style="background: #ecfdf5; padding: 10px; border-radius: 8px; text-align: center;">
-                                    <small style="color: #059669; font-size: 9px; font-weight: bold;">VENDA (2.5x)</small><br>
-                                    <b style="color: #059669;">R$ ${(custo * 2.5).toFixed(2)}</b>
-                                </div>
-                                <div style="background: #f0f9ff; padding: 10px; border-radius: 8px; text-align: center;">
-                                    <small style="color: #0284c7; font-size: 9px; font-weight: bold;">VENDA (3x)</small><br>
-                                    <b style="color: #0284c7;">R$ ${(custo * 3).toFixed(2)}</b>
-                                </div>
-                            </div>
+                        <span class="fornecedor-text">🏷️ Fornecedor: ${item.fornecedor || 'Geral'}</span>
+                        <div style="background:#f1f5f9; padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:bold; color:var(--danger);">Custo: R$ ${item.custo.toFixed(2)}</span>
+                            <span style="font-size:10px; color:#64748b;">📅 ${item.data}</span>
                         </div>
-                        ${dias > 15 ? `<div class="alert-box">⚠️ Preço desatualizado (${dias} dias)</div>` : ''}
-                        <div style="margin-top:15px; font-size:11px; display:flex; justify-content:space-between;">
-                            <span style="color: #64748b;">📅 ${dataFormatada} <span class="badge ${badge}">${dias}d</span></span>
-                            <button onclick="deletePiece('${doc.id}')" style="background:none; color:var(--danger); padding:0; text-decoration: underline;">Excluir</button>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:10px;">
+                            <div style="font-size:11px; color:var(--success);">Venda (2.5x): <b>R$ ${(item.custo*2.5).toFixed(2)}</b></div>
+                            <div style="font-size:11px; color:var(--accent);">Venda (3x): <b>R$ ${(item.custo*3).toFixed(2)}</b></div>
                         </div>
                     </div>`;
             });
         });
     }
 
-    async function updatePrice(id, newVal) {
-        const n = parseFloat(newVal);
-        if(isNaN(n)) return;
-        await db.collection("pecas").doc(id).update({ 
-            custo: n,
-            data: new Date().toLocaleDateString('pt-BR'), // Atualiza a data para hoje ao editar preço
-            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
-        });
+    function savePiece() {
+        const m = document.getElementById('new-modelo').value.toUpperCase();
+        const f = document.getElementById('new-fornecedor').value.toUpperCase();
+        const c = parseFloat(document.getElementById('new-custo').value);
+        if(!m || isNaN(c)) return alert("Preencha os campos!");
+
+        db.collection("pecas").add({
+            modelo: m, fornecedor: f, custo: c,
+            data: new Date().toLocaleDateString('pt-BR'),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => toggleForm());
+    }
+
+    // --- EXCEL ---
+    function downloadTemplate() {
+        const data = [["Data", "Modelo", "Custo", "Fornecedor"]];
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Modelo_Importacao");
+        XLSX.writeFile(wb, "Modelo_Estoque_Evilasio.xlsx");
     }
 
     async function importExcel(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = async (evt) => {
-            const data = new Uint8Array(evt.target.result);
-            const wb = XLSX.read(data, {type:'array'});
+            const bstr = evt.target.result;
+            const wb = XLSX.read(bstr, {type:'binary'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
             const batch = db.batch();
-            
+
             rows.slice(1).forEach(row => {
-                if (row[1]) {
-                    const rawCusto = String(row[2] || "0").replace('R$', '').replace('.', '').replace(',', '.').trim();
-                    const docRef = db.collection("pecas").doc();
-                    batch.set(docRef, {
+                if(row[1]) {
+                    const ref = db.collection("pecas").doc();
+                    batch.set(ref, {
                         data: row[0] || new Date().toLocaleDateString('pt-BR'),
                         modelo: String(row[1]).toUpperCase(),
-                        custo: parseFloat(rawCusto) || 0,
+                        custo: parseFloat(String(row[2]).replace(',','.')) || 0,
+                        fornecedor: String(row[3] || "IMPORTADO").toUpperCase(),
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
             });
             await batch.commit();
-            alert("Importação concluída!");
+            alert("Importação Concluída!");
+            switchTab('estoque', document.querySelector('.tab-link'));
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsBinaryString(file);
     }
 
-    function savePiece() {
-        const d = document.getElementById('new-data').value;
-        const m = document.getElementById('new-modelo').value;
-        const c = document.getElementById('new-custo').value;
-        if(!m || !c) return alert("Preencha modelo e custo");
-
-        db.collection("pecas").add({
-            data: d ? d.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR'),
-            modelo: m.toUpperCase(),
-            custo: parseFloat(c),
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            toggleForm();
-            document.getElementById('new-modelo').value = "";
-            document.getElementById('new-custo').value = "";
+    // --- HISTÓRICO ---
+    function loadHistory() {
+        const uid = auth.currentUser.uid;
+        db.collection("usuarios").doc(uid).collection("logins").orderBy("timestamp", "desc").limit(10).get().then(snap => {
+            const list = document.getElementById('loginHistoryList');
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                list.innerHTML += `<div style="padding:8px; border-bottom:1px solid #e2e8f0;">✅ Acesso em: ${doc.data().data}</div>`;
+            });
         });
     }
 
-    async function clearAllData() {
-        if(confirm("ATENÇÃO: Isso apagará TODO o estoque permanentemente. Confirma?")) {
-            const snap = await db.collection("pecas").get();
-            const batch = db.batch();
-            snap.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-            alert("Estoque limpo com sucesso!");
-        }
-    }
-
-    function deletePiece(id) { if(confirm("Apagar este item?")) db.collection("pecas").doc(id).delete(); }
-    function logout() { auth.signOut().then(() => location.reload()); }
     function toggleForm() { document.getElementById('add-form').classList.toggle('hidden'); }
-    
+    function logout() { auth.signOut().then(() => location.reload()); }
+    function toggleAuthMode() { 
+        const nf = document.getElementById('user-name');
+        nf.classList.toggle('hidden');
+        document.getElementById('btn-auth').innerText = nf.classList.contains('hidden') ? "Entrar" : "Cadastrar";
+    }
     function filterCards() {
         const v = document.getElementById('searchInput').value.toUpperCase();
-        const cards = document.getElementsByClassName('peca-card');
-        for (let c of cards) {
-            const title = c.querySelector('.modelo-title').innerText;
-            c.style.display = title.includes(v) ? "" : "none";
-        }
+        document.querySelectorAll('.peca-card').forEach(c => {
+            c.style.display = c.innerText.toUpperCase().includes(v) ? "" : "none";
+        });
     }
 </script>
 </body>
