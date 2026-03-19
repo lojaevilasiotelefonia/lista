@@ -32,15 +32,12 @@
         .tab-link { cursor: pointer; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; white-space: nowrap; }
         .tab-active { background: var(--primary); color: white; }
 
-        /* Tabela Modelo */
         .excel-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
         .excel-table th, .excel-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
         .excel-table th { background: #f1f5f9; }
 
-        /* Rodapé */
         footer { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--dark); color: white; padding: 12px 0; font-size: 11px; text-align: center; z-index: 999; line-height: 1.4; }
         
-        /* Peças */
         .peca-card { background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 18px; margin-bottom: 15px; }
         .modelo-title { font-size: 16px; color: var(--primary); font-weight: 800; text-transform: uppercase; }
         .fornecedor-text { color: #64748b; font-size: 12px; margin-bottom: 10px; display: block; }
@@ -103,6 +100,13 @@
             <button class="btn-outline" onclick="downloadTemplate()" style="margin-top:15px; width: 100%;">📄 Baixar Planilha Vazia</button>
             <button class="btn-main" onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; margin-top:10px;">📤 Selecionar Arquivo e Importar</button>
             <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
+
+            <hr style="margin: 30px 0; border: 0; border-top: 2px dashed #eee;">
+            <div style="background: #fff1f2; padding: 15px; border-radius: 8px; border: 1px solid #fecaca;">
+                <h5 style="color: var(--danger); margin: 0 0 5px 0;">Zona de Perigo</h5>
+                <p style="font-size: 11px; color: #b91c1c; margin-bottom: 10px;">Esta ação apagará <b>TODAS</b> as peças do banco de dados permanentemente.</p>
+                <button onclick="clearDatabase()" style="background: var(--danger); color: white; width: 100%; font-size: 12px;">🗑️ LIMPAR TODO O BANCO DE DADOS</button>
+            </div>
         </div>
 
         <div id="tab-historico" class="tab-content hidden">
@@ -132,7 +136,6 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- RELÓGIO ---
     function updateClock() {
         const d = new Date();
         document.getElementById('ft-year').innerText = d.getFullYear();
@@ -141,7 +144,6 @@
     }
     setInterval(updateClock, 1000);
 
-    // --- NAVEGAÇÃO ---
     function switchTab(tabId, el) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
         document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('tab-active'));
@@ -150,7 +152,6 @@
         if(tabId === 'historico') loadHistory();
     }
 
-    // --- AUTH ---
     function handleAuth() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
@@ -173,7 +174,6 @@
             const doc = await db.collection("usuarios").doc(user.uid).get();
             document.getElementById('welcome-user').innerText = "Olá, " + (doc.data()?.nome || "Usuário");
             
-            // Registra o login atual no histórico
             db.collection("usuarios").doc(user.uid).collection("logins").add({
                 data: new Date().toLocaleString('pt-BR'),
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -186,7 +186,6 @@
         }
     });
 
-    // --- DADOS ---
     function loadData() {
         db.collection("pecas").orderBy("createdAt", "desc").onSnapshot(snap => {
             const container = document.getElementById('cardsContainer');
@@ -223,7 +222,6 @@
         }).then(() => toggleForm());
     }
 
-    // --- EXCEL ---
     function downloadTemplate() {
         const data = [["Data", "Modelo", "Custo", "Fornecedor"]];
         const ws = XLSX.utils.aoa_to_sheet(data);
@@ -237,19 +235,16 @@
         const reader = new FileReader();
         reader.onload = async (evt) => {
             const bstr = evt.target.result;
-            const wb = XLSX.read(bstr, {type:'binary', cellDates: true}); // Adicionado cellDates
+            const wb = XLSX.read(bstr, {type:'binary', cellDates: true});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
             const batch = db.batch();
 
             rows.slice(1).forEach(row => {
                 if(row[1]) {
                     let dataFormatada;
-                    
-                    // Lógica para converter data do Excel (número) para texto PT-BR
                     if (row[0] instanceof Date) {
                         dataFormatada = row[0].toLocaleDateString('pt-BR');
                     } else if (!isNaN(row[0]) && row[0] > 0) {
-                        // Caso venha como número serial do Excel
                         const dataExcel = new Date((row[0] - 25569) * 86400 * 1000);
                         dataFormatada = dataExcel.toLocaleDateString('pt-BR');
                     } else {
@@ -267,13 +262,33 @@
                 }
             });
             await batch.commit();
-            alert("Importação Concluída com sucesso!");
+            alert("Importação Concluída!");
             switchTab('estoque', document.querySelector('.tab-link'));
         };
         reader.readAsBinaryString(file);
     }
 
-    // --- HISTÓRICO ---
+    async function clearDatabase() {
+        const confirm1 = confirm("⚠️ ATENÇÃO: Você tem certeza que deseja APAGAR TODO o banco de dados?");
+        if (!confirm1) return;
+
+        const confirm2 = prompt("Para confirmar, digite EXCLUIR (em letras maiúsculas):");
+        if (confirm2 !== "EXCLUIR") {
+            alert("Operação cancelada.");
+            return;
+        }
+
+        try {
+            const snapshot = await db.collection("pecas").get();
+            const batch = db.batch();
+            if (snapshot.empty) return alert("O banco já está vazio.");
+
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            alert("✅ Banco de dados limpo com sucesso!");
+        } catch (e) { alert("Erro ao limpar dados."); }
+    }
+
     function loadHistory() {
         const uid = auth.currentUser.uid;
         db.collection("usuarios").doc(uid).collection("logins").orderBy("timestamp", "desc").limit(10).get().then(snap => {
